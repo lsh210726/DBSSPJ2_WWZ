@@ -63,6 +63,9 @@ void ULSH_EnemyFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 	case EEnemyState::Die:
 		DieState();
 		break;
+	case EEnemyState::Climb:
+		ClimbState();
+		break;
 	}
 }
 
@@ -101,6 +104,21 @@ void ULSH_EnemyFSM::MoveState()
 		anim->bAttackPlay = true;
 		//공격 상태 전환 시 대기 시간이 바로 끝나도록 처리
 		currentTime = attackDelayTime;
+	}
+
+
+	if (!isInMaxSpeed && me->GetVelocity().Size() > 500)
+	{
+		isInMaxSpeed = true;
+	}
+
+	//만약 이동속도가 100 이하라면 > 벽에 막힌다면
+	if (isInMaxSpeed && me->GetVelocity().Size() < 100)
+	{
+		//오르기 상태로 전환
+		mState = EEnemyState::Climb;
+		//애니메이션 상태 동기화
+		anim->animState = mState;
 	}
 }
 void ULSH_EnemyFSM::AttackState()
@@ -189,4 +207,9 @@ void ULSH_EnemyFSM::OnDamageProcess()
 
 	//애니메이션 상태 동기화
 	anim->animState = mState;
+}
+
+void ULSH_EnemyFSM::ClimbState()
+{
+
 }

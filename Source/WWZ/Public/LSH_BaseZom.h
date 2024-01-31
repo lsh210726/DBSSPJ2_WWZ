@@ -28,4 +28,6 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "FSMComponent")
 	class ULSH_EnemyFSM* fsm;
+
+
 };

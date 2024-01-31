@@ -5,6 +5,7 @@
 #include "LSH_EnemyFSM.h"
 
 
+
 // Sets default values
 ALSH_BaseZom::ALSH_BaseZom()
 {
@@ -34,6 +35,8 @@ void ALSH_BaseZom::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	auto c = GetCapsuleComponent();
+	
 }
 
 // Called every frame
@@ -49,4 +52,3 @@ void ALSH_BaseZom::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 }
-

@@ -15,6 +15,7 @@ enum class EEnemyState :uint8
 	Attack,
 	Damage,
 	Die,
+	Climb,
 };
 
 
@@ -43,6 +44,7 @@ public:
 	void AttackState();
 	void DamageState();
 	void DieState();
+	void ClimbState();
 
 	UPROPERTY(EditDefaultsOnly, Category = "FSM")
 	float idleDelayTime = 2;
@@ -78,4 +80,8 @@ public:
 	//Enemy를 소유하고 있는 AIController
 	UPROPERTY()
 	class AAIController* ai;
+
+	bool isInMaxSpeed = false;
+
+
 };
