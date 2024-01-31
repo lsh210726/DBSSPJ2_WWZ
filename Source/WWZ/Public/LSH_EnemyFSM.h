@@ -58,7 +58,7 @@ public:
 	float attackRange = 150.0f;
 
 	UPROPERTY(EditAnywhere, Category = "FSM")
-	float attackDelayTime = 2.0f;
+	float attackDelayTime = 3.0f;
 
 	void OnDamageProcess();
 
@@ -71,4 +71,11 @@ public:
 	//아래로 사라지는 속도
 	UPROPERTY(EditAnywhere, Category = "FSM")
 	float dieSpeed = 50.0f;
+	//사용 중인 애니메이션 블루프린트
+	UPROPERTY()
+	class ULSH_EnemyAnim* anim;
+
+	//Enemy를 소유하고 있는 AIController
+	UPROPERTY()
+	class AAIController* ai;
 };

@@ -21,6 +21,12 @@ ALSH_BaseZom::ALSH_BaseZom()
 
 	//AI FSM
 	fsm = CreateDefaultSubobject<ULSH_EnemyFSM>(TEXT("FSM"));
+
+	ConstructorHelpers::FClassFinder<UAnimInstance> tempClass(TEXT("/Script/Engine.AnimBlueprint'/Game/Essets/Character/Zombie/Anim/ABP_Enemy.ABP_Enemy_C'"));
+	if (tempClass.Succeeded())
+	{
+		GetMesh()->SetAnimInstanceClass(tempClass.Class);
+	}
 }
 
 // Called when the game starts or when spawned
