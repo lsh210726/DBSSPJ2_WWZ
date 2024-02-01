@@ -8,6 +8,7 @@
 #include <Components/CapsuleComponent.h>
 #include "LSH_EnemyAnim.h"
 #include "AIController.h"
+#include "LSH_ClimbZone.h"
 
 
 // Sets default values for this component's properties
@@ -36,6 +37,8 @@ void ULSH_EnemyFSM::BeginPlay()
 
 	//AAIController 할당하기
 	ai = Cast<AAIController>(me->GetController());
+
+	me->GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &ULSH_EnemyFSM::ClimbZoneOverlap);
 }
 
 
@@ -71,6 +74,11 @@ void ULSH_EnemyFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 
 void ULSH_EnemyFSM::IdleState()
 {
+	//FVector p0 = me->GetActorLocation();
+	//FVector vt = me->GetActorUpVector() * 800 * GetWorld()->DeltaTimeSeconds;
+	//me->SetActorLocation(p0 + vt);
+	//return;
+
 	//시간이 흐름
 	currentTime += GetWorld()->DeltaTimeSeconds;
 	//경과시간이 대기시간을 넘김
@@ -106,17 +114,15 @@ void ULSH_EnemyFSM::MoveState()
 		currentTime = attackDelayTime;
 	}
 
-
 	if (!isInMaxSpeed && me->GetVelocity().Size() > 500)
 	{
 		isInMaxSpeed = true;
 	}
-
 	//만약 이동속도가 100 이하라면 > 벽에 막힌다면
 	if (isInMaxSpeed && me->GetVelocity().Size() < 100)
 	{
 		//오르기 상태로 전환
-		mState = EEnemyState::Climb;
+		mState = EEnemyState::Idle;
 		//애니메이션 상태 동기화
 		anim->animState = mState;
 	}
@@ -211,5 +217,37 @@ void ULSH_EnemyFSM::OnDamageProcess()
 
 void ULSH_EnemyFSM::ClimbState()
 {
+	FVector p0 = me->GetActorLocation();
+	FVector vt = me->GetActorUpVector() * 500 * GetWorld()->DeltaTimeSeconds;
+	me->SetActorLocation(p0 + vt);
+}
 
+
+void ULSH_EnemyFSM::ClimbZoneOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	//클라임존인지 확인
+	auto a = Cast<ALSH_ClimbZone>(OtherActor);
+	if (a != nullptr)
+	{
+		bIsClimbing = true;
+
+		//오르기 상태로 전환
+		mState = EEnemyState::Climb;
+		//애니메이션 상태 동기화
+		anim->animState = mState;
+	}
+	//UE_LOG(LogTemp, Log, TEXT("Im Climb!!"));
+}
+
+void ULSH_EnemyFSM::ClimbZoneEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	//클라임존인지 확인
+	auto a = Cast<ALSH_ClimbZone>(OtherActor);
+	if (a != nullptr)
+	{
+		bIsClimbing = false;
+		UE_LOG(LogTemp, Log, TEXT("No Climb!!"));
+	}
+	bIsClimbing = false;
+	UE_LOG(LogTemp, Log, TEXT("No Climb!!"));
 }

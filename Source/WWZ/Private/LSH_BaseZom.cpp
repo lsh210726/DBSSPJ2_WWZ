@@ -28,6 +28,7 @@ ALSH_BaseZom::ALSH_BaseZom()
 	{
 		GetMesh()->SetAnimInstanceClass(tempClass.Class);
 	}
+
 }
 
 // Called when the game starts or when spawned
@@ -35,14 +36,16 @@ void ALSH_BaseZom::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	auto c = GetCapsuleComponent();
-	
+	//GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &ALSH_BaseZom::ClimbZoneOverlap);
+	//GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic()
+
 }
 
 // Called every frame
 void ALSH_BaseZom::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
 
 }
 
