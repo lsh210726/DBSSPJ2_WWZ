@@ -28,8 +28,13 @@ void ULSH_EnemyFSM::BeginPlay()
 	Super::BeginPlay();
 
 	//월드에서 플레이어 타깃 찾기
-	auto actor = UGameplayStatics::GetActorOfClass(GetWorld(), AWWZCharacter::StaticClass());
-	target = Cast<AWWZCharacter>(actor);
+	//auto actor = UGameplayStatics::GetActorOfClass(GetWorld(), AWWZCharacter::StaticClass());
+	//target = Cast<AWWZCharacter>(actor);
+
+	//클라임 존 찾기
+	auto actor = UGameplayStatics::GetActorOfClass(GetWorld(), ALSH_ClimbZone::StaticClass());
+	target = Cast<ALSH_ClimbZone>(actor);
+
 	me = Cast<ALSH_BaseZom>(GetOwner());
 
 	//EnemyAnim 변수에 넣기
@@ -39,6 +44,7 @@ void ULSH_EnemyFSM::BeginPlay()
 	ai = Cast<AAIController>(me->GetController());
 
 	me->GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &ULSH_EnemyFSM::ClimbZoneOverlap);
+	me->GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &ULSH_EnemyFSM::ClimbZoneEndOverlap);
 }
 
 
@@ -121,7 +127,7 @@ void ULSH_EnemyFSM::MoveState()
 	//만약 이동속도가 100 이하라면 > 벽에 막힌다면
 	if (isInMaxSpeed && me->GetVelocity().Size() < 100)
 	{
-		//오르기 상태로 전환
+		//멈추기 상태로 전환
 		mState = EEnemyState::Idle;
 		//애니메이션 상태 동기화
 		anim->animState = mState;
@@ -184,6 +190,7 @@ void ULSH_EnemyFSM::DieState()
 	}
 	UE_LOG(LogTemp, Log, TEXT("Die"));
 }
+
 void ULSH_EnemyFSM::OnDamageProcess()
 {
 	hp--;
@@ -217,9 +224,12 @@ void ULSH_EnemyFSM::OnDamageProcess()
 
 void ULSH_EnemyFSM::ClimbState()
 {
-	FVector p0 = me->GetActorLocation();
-	FVector vt = me->GetActorUpVector() * 500 * GetWorld()->DeltaTimeSeconds;
-	me->SetActorLocation(p0 + vt);
+	//me->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	//FVector P0 = me->GetActorLocation();
+	//FVector vt = FVector::UpVector * dieSpeed * GetWorld()->DeltaTimeSeconds;
+	//FVector P = P0 + vt;
+	//me->SetActorLocation(P);
+	me->ClimbMovement(me->GetActorUpVector(), 1.0f);
 }
 
 
@@ -229,8 +239,8 @@ void ULSH_EnemyFSM::ClimbZoneOverlap(UPrimitiveComponent* OverlappedComponent, A
 	auto a = Cast<ALSH_ClimbZone>(OtherActor);
 	if (a != nullptr)
 	{
-		bIsClimbing = true;
-
+		//이동모드 -> 오르기
+		me->ClimbAction();
 		//오르기 상태로 전환
 		mState = EEnemyState::Climb;
 		//애니메이션 상태 동기화
@@ -245,9 +255,14 @@ void ULSH_EnemyFSM::ClimbZoneEndOverlap(UPrimitiveComponent* OverlappedComponent
 	auto a = Cast<ALSH_ClimbZone>(OtherActor);
 	if (a != nullptr)
 	{
-		bIsClimbing = false;
+
+
+		//오르기 상태로 전환
+		mState = EEnemyState::Move;
+		//애니메이션 상태 동기화
+		anim->animState = mState;
+
 		UE_LOG(LogTemp, Log, TEXT("No Climb!!"));
 	}
-	bIsClimbing = false;
 	UE_LOG(LogTemp, Log, TEXT("No Climb!!"));
 }

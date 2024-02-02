@@ -29,5 +29,12 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "FSMComponent")
 	class ULSH_EnemyFSM* fsm;
 
+	UFUNCTION()
+	void ClimbAction();
 
+	UPROPERTY(EditAnywhere, Category = "climb")
+	float climbDistance = 100;
+
+	UFUNCTION()
+	void ClimbMovement(FVector worldDir, float scale);
 };

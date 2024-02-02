@@ -51,7 +51,9 @@ public:
 	float currentTime = 0;
 
 	UPROPERTY(VisibleAnywhere, Category = "FSM")
-	class AWWZCharacter* target;
+	class ALSH_ClimbZone* target;
+
+	//class AWWZCharacter* target;
 
 	UPROPERTY()
 	class ALSH_BaseZom* me;
@@ -89,6 +91,6 @@ public:
 	UFUNCTION()
 	void ClimbZoneEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-	UPROPERTY()
-	bool bIsClimbing=false;
+	//UPROPERTY()
+	//class ALSH_ClimbZone* climbZone;
 };

@@ -3,6 +3,11 @@
 
 #include "LSH_BaseZom.h"
 #include "LSH_EnemyFSM.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include <Components/CapsuleComponent.h>
+#include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/KismetMathLibrary.h"
+
 
 
 
@@ -54,4 +59,68 @@ void ALSH_BaseZom::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+
+
+void ALSH_BaseZom::ClimbAction()
+{
+	auto CharMov = GetCharacterMovement();
+	//만약 현재 이동모드가 플라잉이 아니라면 기어오르기모드(플라잉)
+	if(CharMov->MovementMode != EMovementMode::MOVE_Flying)
+	{
+		FVector startPos = GetActorLocation();
+		FVector endPos = startPos + GetActorForwardVector() * climbDistance;
+		DrawDebugLine(GetWorld(), startPos, endPos, FColor::Emerald, false, 1);
+		FHitResult hitInfo;
+		FCollisionQueryParams params;
+		params.AddIgnoredActor(this);
+		bool bHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECC_Visibility, params);
+		if (bHit)
+		{
+			//날기 상태로 바꾸기
+			CharMov->SetMovementMode(MOVE_Flying);
+			//회전 비활성화
+			CharMov->bOrientRotationToMovement = false;
+
+			auto f1 = hitInfo.Normal * GetCapsuleComponent()->GetScaledCapsuleRadius();
+			auto f2 = f1 + hitInfo.Location;
+			//GetCapsuleComponent()
+
+			//벽에 찰싹 달라붙게
+			//auto r1 = UKismetMathLibrary::MakeRotFromX(hitInfo.Normal * -1.0f);
+			//FLatentActionInfo Info;
+			//Info.CallbackTarget = this;
+			//UKismetSystemLibrary::MoveComponentTo(
+			//	GetCapsuleComponent(),
+			//	f2,
+			//	r1,
+			//	false,
+			//	false,
+			//	0.2f,
+			//	false,
+			//	EMoveComponentAction::Type::Move,
+			//	Info
+			//);
+		}
+	}
+}
+
+void ALSH_BaseZom::ClimbMovement(FVector worldDir, float scale)
+{
+	FVector startPos = GetActorLocation();
+	FVector endPos = startPos + GetActorForwardVector() * climbDistance;
+	DrawDebugLine(GetWorld(), startPos, endPos, FColor::Emerald, false, 1);
+	FHitResult hitInfo;
+	FCollisionQueryParams params;
+	params.AddIgnoredActor(this);
+	bool bHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECC_Visibility, params);
+	if (bHit)
+	{
+		AddMovementInput(worldDir, scale);
+		auto r1 = UKismetMathLibrary::MakeRotFromX(hitInfo.Normal * -1.0f);
+		SetActorRotation(UKismetMathLibrary::RLerp(GetActorRotation(), r1, 0.2, false));
+		DrawDebugPoint(GetWorld(), hitInfo.ImpactPoint, 10, FColor(52, 220, 239), false, 1.0F);
+
+	}
 }
