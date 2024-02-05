@@ -3,3 +3,7 @@
 
 #include "LSH_EnemyAnim.h"
 
+void ULSH_EnemyAnim::OnEndAttackAnimation()
+{
+	bAttackPlay = false;
+}
