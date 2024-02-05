@@ -94,4 +94,29 @@ public:
 	/// <summary> true면 SniperGun, false면 GrenadeGun </summary>
 	bool bChooseSniperGun = false; //true면 SniperGun, false면 GrenadeGun
 
+	//십자가 키고, 끄기
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bCrossOn = false;
+
+	//리로딩 UI 업로드
+
+	UPROPERTY()
+	class UUserWidget* reloadUI;
+
+	UPROPERTY( EditAnywhere )
+	TSubclassOf<class UUserWidget> reloadFactory;
+
+	//grenadeMagazin
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int CurrentGreMagazin = 50;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int GreMagazin = 50;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int totalGreMagazin = 100;
+
+	void setGreMagazin();
+	void ReloadComplete();
+
 };

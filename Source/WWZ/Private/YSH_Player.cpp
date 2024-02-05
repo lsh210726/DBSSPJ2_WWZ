@@ -2,14 +2,15 @@
 
 
 #include "YSH_Player.h"
-#include "../../../../../../../Source/Runtime/Engine/Classes/GameFramework/SpringArmComponent.h"
-#include "../../../../../../../Source/Runtime/Engine/Classes/Camera/CameraComponent.h"
-#include "../../../../../../../Source/Runtime/Engine/Classes/Engine/SkeletalMesh.h"
-#include "../../../../../../../Source/Runtime/Engine/Classes/GameFramework/Character.h"
-#include "../../../../../../../Source/Runtime/Engine/Classes/Components/SkeletalMeshComponent.h"
-#include "../../../../../../../Source/Runtime/Engine/Classes/Components/InputComponent.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "Camera/CameraComponent.h"
+#include "Engine/SkeletalMesh.h"
+#include "GameFramework/Character.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/InputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "YSH_BulletActor.h"
+#include "Engine/World.h"
 
 
 // Sets default values
@@ -98,12 +99,21 @@ void AYSH_Player::BeginPlay()
 	sniperUI = CreateWidget(GetWorld(), sniperFactory);
 	sniperUI->AddToViewport();
 
+	reloadUI = CreateWidget(GetWorld(), reloadFactory);
+	reloadUI->AddToViewport();
+
 	// 태어날 때 기본조준(CrossHair UI)만 보이게하고싶다
 	sniperUI->SetVisibility(ESlateVisibility::Hidden);
+	reloadUI->SetVisibility(ESlateVisibility::Hidden);
 
 	// 총을 교체하면 ZoomOut을 하고싶다.
 
 	OnActionChooseGrenadeGun();
+
+	//탄약 설정
+	GreMagazin = 10;
+	CurrentGreMagazin = 10;
+	totalGreMagazin = 100;
 
 }
 
@@ -188,6 +198,8 @@ void AYSH_Player::OnActionFire()
 	{
 		FTransform t = gunMeshComp->GetSocketTransform(TEXT("FirePosition"));
 		GetWorld()->SpawnActor<AYSH_BulletActor>(bulletFactory, t);
+		setGreMagazin();
+		UE_LOG(LogTemp, Warning, TEXT("Fired with gun. CurrentGreMagazin: %d"), CurrentGreMagazin);
 	}
 	// 그렇지 않다면 LineTrace 
 	else
@@ -279,4 +291,46 @@ FORCEINLINE void AYSH_Player::OnActionZoomOut()
 	crossHairUI->SetVisibility(ESlateVisibility::Visible);
 	sniperUI->SetVisibility(ESlateVisibility::Hidden);
 	targetFOV = 90;
+}
+
+void AYSH_Player::setGreMagazin()
+{
+	if (CurrentGreMagazin > 0)
+	{
+		// 현재 총알이 존재한다면 -1 해라.
+		CurrentGreMagazin -= 1;
+	}
+	else
+	{
+		// 총알이 존재하지 않는데
+
+		// 총 탄약이 존재한다면
+		if (totalGreMagazin > 0)
+		{
+			// 여기서 리로딩 위젯이 나와야 할 것 같다.
+			reloadUI->SetVisibility(ESlateVisibility::Visible);
+
+			// 재장전 해라. 현재 탄창에 50발을 넣는다.
+			CurrentGreMagazin = GreMagazin;
+
+			// 총 탄약에서 50을 뺀 것을 저장한다.
+			totalGreMagazin -= GreMagazin;
+
+			// 딜레이 2초를 줘서 장전하는 시간과 위젯이 실행되는 시간을 가진다.
+			FTimerHandle TimerHandle;
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AYSH_Player::ReloadComplete, 2.0f, false);
+		}
+		else
+		{
+			CurrentGreMagazin = 0;
+			totalGreMagazin = 0;
+		}
+	}
+}
+
+void AYSH_Player::ReloadComplete()
+{
+	// 재장전이 완료되었을 때 호출되는 함수
+	// 예를 들어, 여기서 reloadUI를 다시 숨길 수 있습니다.
+	reloadUI->SetVisibility(ESlateVisibility::Hidden);
 }
