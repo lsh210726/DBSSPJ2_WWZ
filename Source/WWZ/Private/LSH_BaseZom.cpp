@@ -69,7 +69,7 @@ void ALSH_BaseZom::ClimbAction()
 	//만약 현재 이동모드가 플라잉이 아니라면 기어오르기모드(플라잉)
 	if(CharMov->MovementMode != EMovementMode::MOVE_Flying)
 	{
-		FVector startPos = GetActorLocation();
+		FVector startPos = GetActorLocation()+FVector(0,0,100);
 		FVector endPos = startPos + GetActorForwardVector() * climbDistance;
 		DrawDebugLine(GetWorld(), startPos, endPos, FColor::Emerald, false, 1);
 		FHitResult hitInfo;
@@ -88,27 +88,28 @@ void ALSH_BaseZom::ClimbAction()
 			//GetCapsuleComponent()
 
 			//벽에 찰싹 달라붙게
-			//auto r1 = UKismetMathLibrary::MakeRotFromX(hitInfo.Normal * -1.0f);
-			//FLatentActionInfo Info;
-			//Info.CallbackTarget = this;
-			//UKismetSystemLibrary::MoveComponentTo(
-			//	GetCapsuleComponent(),
-			//	f2,
-			//	r1,
-			//	false,
-			//	false,
-			//	0.2f,
-			//	false,
-			//	EMoveComponentAction::Type::Move,
-			//	Info
-			//);
+			auto r1 = UKismetMathLibrary::MakeRotFromX(hitInfo.Normal * -1.0f);
+			FLatentActionInfo Info;
+			Info.CallbackTarget = this;
+			UKismetSystemLibrary::MoveComponentTo(
+				GetCapsuleComponent(),
+				f2,
+				r1,
+				false,
+				false,
+				0.2f,
+				false,
+				EMoveComponentAction::Type::Move,
+				Info
+			);
+			doOnce = false;
 		}
 	}
 }
 
-void ALSH_BaseZom::ClimbMovement(FVector worldDir, float scale)
+void ALSH_BaseZom::ClimbMovement(FVector worldDir)
 {
-	FVector startPos = GetActorLocation();
+	FVector startPos = GetActorLocation() + FVector(0, 0, 100);
 	FVector endPos = startPos + GetActorForwardVector() * climbDistance;
 	DrawDebugLine(GetWorld(), startPos, endPos, FColor::Emerald, false, 1);
 	FHitResult hitInfo;
@@ -117,10 +118,50 @@ void ALSH_BaseZom::ClimbMovement(FVector worldDir, float scale)
 	bool bHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECC_Visibility, params);
 	if (bHit)
 	{
-		AddMovementInput(worldDir, scale);
+		AddMovementInput(worldDir, climbSpeed);
 		auto r1 = UKismetMathLibrary::MakeRotFromX(hitInfo.Normal * -1.0f);
 		SetActorRotation(UKismetMathLibrary::RLerp(GetActorRotation(), r1, 0.2, false));
 		DrawDebugPoint(GetWorld(), hitInfo.ImpactPoint, 10, FColor(52, 220, 239), false, 1.0F);
 
+	}
+	else LedgeMantleCalc(startPos);
+}
+
+void ALSH_BaseZom::LedgeMantleCalc(FVector startLoc)
+{
+	if(!doOnce)
+	{
+		FVector headPos = startLoc + FVector(0, 0, 45);
+		FVector fwdVec = GetActorForwardVector();
+		FHitResult hitInfo;
+		FCollisionQueryParams params;
+		params.AddIgnoredActor(this);
+		for (int i = 0; i < 5; i++)
+		{
+			FVector startPos = fwdVec * i * 20 + headPos;
+			FVector endPos = startPos - FVector(0, 0, 100);
+			DrawDebugLine(GetWorld(), startPos, endPos, FColor::Red, false, 1);
+			bool bHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECC_Visibility, params);
+			if (bHit)
+			{
+				DrawDebugPoint(GetWorld(), hitInfo.ImpactPoint, 10, FColor::Black, false, 7.0F);
+				DrawDebugPoint(GetWorld(), hitInfo.Location + FVector(0, 0, 90), 10, FColor::Yellow, false, 7.0F);
+				FLatentActionInfo Info;
+				UKismetSystemLibrary::MoveComponentTo(
+					GetCapsuleComponent(),
+					hitInfo.Location + FVector(0, 0, 90),
+					GetActorRotation(),
+					false,
+					false,
+					1.0f,
+					false,
+					EMoveComponentAction::Type::Move,
+					Info
+				);
+				GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("Your Message"));
+				doOnce = true;
+				break;
+			}
+		}
 	}
 }

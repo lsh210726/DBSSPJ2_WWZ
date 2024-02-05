@@ -59,7 +59,7 @@ public:
 	class ALSH_BaseZom* me;
 
 	UPROPERTY(EditAnywhere, Category = "FSM")
-	float attackRange = 150.0f;
+	float attackRange = 50.0f;
 
 	UPROPERTY(EditAnywhere, Category = "FSM")
 	float attackDelayTime = 3.0f;

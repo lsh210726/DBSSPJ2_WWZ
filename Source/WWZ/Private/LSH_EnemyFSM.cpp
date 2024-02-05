@@ -229,7 +229,7 @@ void ULSH_EnemyFSM::ClimbState()
 	//FVector vt = FVector::UpVector * dieSpeed * GetWorld()->DeltaTimeSeconds;
 	//FVector P = P0 + vt;
 	//me->SetActorLocation(P);
-	me->ClimbMovement(me->GetActorUpVector(), 1.0f);
+	me->ClimbMovement(me->GetActorUpVector());
 }
 
 
