@@ -1,67 +1,57 @@
-ï»¿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "YSH_BulletActor.h"
-#include "Components/SphereComponent.h"
-#include "Components/StaticMeshComponent.h"
-#include "GameFramework/ProjectileMovementComponent.h"
+#include "../../../../../../../Source/Runtime/Engine/Classes/Components/SphereComponent.h"
+#include "../../../../../../../Source/Runtime/Engine/Classes/Components/StaticMeshComponent.h"
+#include "../../../../../../../Source/Runtime/Engine/Classes/GameFramework/ProjectileMovementComponent.h"
 
 // Sets default values
-ABulletActor::ABulletActor()
+AYSH_BulletActor::AYSH_BulletActor()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+ 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	// sphereCompë¥¼ ë£¨íŠ¸ë¡œ
-	sphereComp = CreateDefaultSubobject<USphereComponent>( TEXT( "sphereComp" ) );
-	SetRootComponent( sphereComp );
-	meshComp = CreateDefaultSubobject<UStaticMeshComponent>( TEXT( "meshComp" ) );
-	meshComp->SetupAttachment( RootComponent );
 
-	movementComp = CreateDefaultSubobject<UProjectileMovementComponent>( TEXT( "movementComp" ) );
-	movementComp->SetUpdatedComponent( sphereComp );
+	// sphereComp¸¦ ·çÆ®·Î
+	sphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("sphereComp"));
+	SetRootComponent(sphereComp);
+	meshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("meshComp"));
+	meshComp->SetupAttachment(RootComponent);
 
-	// speedì„¤ì •, ë°”ìš´ë“œì„¤ì •
+	movementComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("movementComp"));
+	movementComp->SetUpdatedComponent(sphereComp);
+
+	// speed¼³Á¤, ¹Ù¿îµå¼³Á¤
 	movementComp->InitialSpeed = 2000.f;
 	movementComp->MaxSpeed = 2000.f;
 	movementComp->bShouldBounce = true;
 
-	sphereComp->SetCollisionProfileName( TEXT( "BlockAll" ) );
-	meshComp->SetCollisionEnabled( ECollisionEnabled::NoCollision );
+	sphereComp->SetCollisionProfileName(TEXT("BlockAll"));
+	meshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	// ë©”ì‹œì˜ í¬ê¸°ë¥¼ 0.25ë¡œ í•˜ê³ ì‹¶ë‹¤.
-	meshComp->SetWorldScale3D( FVector( 0.25f ) );
-	// ì¶©ëŒì²´ì˜ ë°˜ì§€ë¦„ì„ 12.5 í•˜ê³ ì‹¶ë‹¤
-	sphereComp->SetSphereRadius( 12.5f );
+	// ¸Þ½ÃÀÇ Å©±â¸¦ 0.25·Î ÇÏ°í½Í´Ù.
+	meshComp->SetWorldScale3D(FVector(0.25f));
+	// Ãæµ¹Ã¼ÀÇ ¹ÝÁö¸§À» 12.5 ÇÏ°í½Í´Ù
+	sphereComp->SetSphereRadius(12.5f);
 
 	//SetLifeSpan(5); 
+
 }
 
 // Called when the game starts or when spawned
-void ABulletActor::BeginPlay()
+void AYSH_BulletActor::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// ì´ì•Œì•¡í„°ì˜ ìˆ˜ëª…ì„ 5ì´ˆë¡œ í•˜ê³ ì‹¶ë‹¤. íƒ€ì´ë¨¸ë¥¼ ì´ìš©í•´ì„œ ì²˜ë¦¬í•˜ê³  ì‹¶ë‹¤.
+	
+	// ÃÑ¾Ë¾×ÅÍÀÇ ¼ö¸íÀ» 5ÃÊ·Î ÇÏ°í½Í´Ù. Å¸ÀÌ¸Ó¸¦ ÀÌ¿ëÇØ¼­ Ã³¸®ÇÏ°í ½Í´Ù.
 	FTimerHandle timerHandle;
-	GetWorld()->GetTimerManager().SetTimer( timerHandle , FTimerDelegate::CreateLambda( [this]()->void { this->Destroy(); } ) , 5 , false );
-
-
-	// ëžŒë‹¤(lambda)ì‹, ë¬´ëª…í•¨ìˆ˜
-	//[ìº¡ì³ëŒ€ìƒ](ë§¤ê°œë³€ìˆ˜)->ë°˜í™˜ìžë£Œí˜•{ TO DO };
-	//auto lambdaFun1 = [this]( int a , int b ) {};
-
-	//auto lambdaFun = [this]( int a , int b )->int
-	//	{
-	//		return a + b;
-	//	};
-
-	//int result = lambdaFun( 10 , 20 );
+	GetWorld()->GetTimerManager().SetTimer(timerHandle, FTimerDelegate::CreateLambda([this]()->void { this->Destroy(); }), 5, false);
 }
 
 // Called every frame
-void ABulletActor::Tick( float DeltaTime )
+void AYSH_BulletActor::Tick(float DeltaTime)
 {
-	Super::Tick( DeltaTime );
+	Super::Tick(DeltaTime);
 
 }
 

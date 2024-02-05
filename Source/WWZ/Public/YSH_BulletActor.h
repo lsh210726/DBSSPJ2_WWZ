@@ -1,4 +1,4 @@
-ï»¿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -7,13 +7,13 @@
 #include "YSH_BulletActor.generated.h"
 
 UCLASS()
-class TPSGAMECD_API ABulletActor : public AActor
+class WWZ_API AYSH_BulletActor : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	ABulletActor();
+	AYSH_BulletActor();
 
 protected:
 	// Called when the game starts or when spawned
@@ -23,7 +23,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// ì¶©ëŒì²´ì™€ ì™¸ê´€ì„ ë§Œë“¤ê³ ì‹¶ë‹¤.
+	// Ãæµ¹Ã¼¿Í ¿Ü°üÀ» ¸¸µé°í½Í´Ù.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AAA)
 	class USphereComponent* sphereComp;
 
@@ -34,4 +34,5 @@ public:
 	class UProjectileMovementComponent* movementComp;
 
 	FORCEINLINE void AutoDestroy() { this->Destroy(); }
+
 };
