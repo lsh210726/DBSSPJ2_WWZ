@@ -93,4 +93,7 @@ public:
 
 	//UPROPERTY()
 	//class ALSH_ClimbZone* climbZone;
+
+	UFUNCTION()
+	void ClimbUpEvent();
 };

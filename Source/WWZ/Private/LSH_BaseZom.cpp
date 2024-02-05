@@ -144,20 +144,24 @@ void ALSH_BaseZom::LedgeMantleCalc(FVector startLoc)
 			bool bHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECC_Visibility, params);
 			if (bHit)
 			{
+				//SetActorEnableCollision(false);
+				//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 				DrawDebugPoint(GetWorld(), hitInfo.ImpactPoint, 10, FColor::Black, false, 7.0F);
 				DrawDebugPoint(GetWorld(), hitInfo.Location + FVector(0, 0, 90), 10, FColor::Yellow, false, 7.0F);
 				FLatentActionInfo Info;
+				Info.CallbackTarget = this;
 				UKismetSystemLibrary::MoveComponentTo(
 					GetCapsuleComponent(),
 					hitInfo.Location + FVector(0, 0, 90),
 					GetActorRotation(),
 					false,
 					false,
-					1.0f,
+					5.0f,
 					false,
 					EMoveComponentAction::Type::Move,
 					Info
 				);
+				fsm->ClimbUpEvent();
 				GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("Your Message"));
 				doOnce = true;
 				break;

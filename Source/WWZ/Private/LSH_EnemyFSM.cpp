@@ -266,3 +266,10 @@ void ULSH_EnemyFSM::ClimbZoneEndOverlap(UPrimitiveComponent* OverlappedComponent
 	}
 	UE_LOG(LogTemp, Log, TEXT("No Climb!!"));
 }
+
+
+void ULSH_EnemyFSM::ClimbUpEvent()
+{
+	//기어올라가기 애니메이션 몽타지 재생
+	anim->PlayClimbUpAnim();
+}
