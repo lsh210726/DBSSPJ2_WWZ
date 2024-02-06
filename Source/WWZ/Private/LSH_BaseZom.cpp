@@ -63,7 +63,7 @@ void ALSH_BaseZom::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 
 
-void ALSH_BaseZom::ClimbAction()
+bool ALSH_BaseZom::ClimbAction()
 {
 	auto CharMov = GetCharacterMovement();
 	//만약 현재 이동모드가 플라잉이 아니라면 기어오르기모드(플라잉)
@@ -103,8 +103,10 @@ void ALSH_BaseZom::ClimbAction()
 				Info
 			);
 			doOnce = false;
+			return true;
 		}
 	}
+	return false;
 }
 
 void ALSH_BaseZom::ClimbMovement(FVector worldDir)
@@ -162,10 +164,20 @@ void ALSH_BaseZom::LedgeMantleCalc(FVector startLoc)
 					Info
 				);
 				fsm->ClimbUpEvent();
-				GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("Your Message"));
 				doOnce = true;
 				break;
 			}
 		}
 	}
+}
+
+void ALSH_BaseZom::StopClimb()
+{
+	auto CharMov = GetCharacterMovement();
+
+	//날기 상태로 바꾸기
+	CharMov->SetMovementMode(MOVE_Walking);
+	//회전 비활성화
+	CharMov->bOrientRotationToMovement = true;
+	SetActorRotation(FRotator(0, GetActorRotation().Yaw, 0));
 }

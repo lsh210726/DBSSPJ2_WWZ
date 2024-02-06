@@ -30,7 +30,7 @@ public:
 	class ULSH_EnemyFSM* fsm;
 
 	UFUNCTION()
-	void ClimbAction();
+	bool ClimbAction();
 
 	UPROPERTY(EditAnywhere, Category = "climb")
 	float climbDistance = 50;
@@ -47,4 +47,8 @@ public:
 
 	//DoOnce
 	bool doOnce = false;
+
+	
+	UFUNCTION()
+	void StopClimb();
 };

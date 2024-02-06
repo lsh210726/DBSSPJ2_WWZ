@@ -51,15 +51,15 @@ public:
 	float currentTime = 0;
 
 	UPROPERTY(VisibleAnywhere, Category = "FSM")
-	class ALSH_ClimbZone* target;
-
-	//class AWWZCharacter* target;
+	class AWWZCharacter* target;
+	UPROPERTY(VisibleAnywhere, Category = "FSM")
+	class ALSH_ClimbZone* climbZone;
 
 	UPROPERTY()
 	class ALSH_BaseZom* me;
 
 	UPROPERTY(EditAnywhere, Category = "FSM")
-	float attackRange = 50.0f;
+	float attackRange = 100.0f;
 
 	UPROPERTY(EditAnywhere, Category = "FSM")
 	float attackDelayTime = 3.0f;
@@ -96,4 +96,10 @@ public:
 
 	UFUNCTION()
 	void ClimbUpEvent();
+
+
+	UFUNCTION()
+	void itHasPath();
+
+	bool climbMode=true;
 };
