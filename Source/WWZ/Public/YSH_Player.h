@@ -119,4 +119,17 @@ public:
 	void setGreMagazin();
 	void ReloadComplete();
 
+
+	//hp, magazine ฐüทร ui
+	UPROPERTY()
+	class UUserWidget* playerUI;
+
+	UPROPERTY( EditAnywhere )
+	TSubclassOf<class UUserWidget> playerFactory;
+
+	public:
+	UPROPERTY(BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
+	class UWidgetAnimation* reloadAnim;
+	FWidgetAnimationDynamicEvent StartDelegate;
+
 };

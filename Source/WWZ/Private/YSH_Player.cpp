@@ -11,6 +11,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "YSH_BulletActor.h"
 #include "Engine/World.h"
+#include "Blueprint/UserWidget.h"
+#include "Animation/WidgetAnimation.h"
 
 
 // Sets default values
@@ -101,6 +103,9 @@ void AYSH_Player::BeginPlay()
 
 	reloadUI = CreateWidget(GetWorld(), reloadFactory);
 	reloadUI->AddToViewport();
+
+	playerUI = CreateWidget(GetWorld(), playerFactory);
+	playerUI->AddToViewport();
 
 	// 태어날 때 기본조준(CrossHair UI)만 보이게하고싶다
 	sniperUI->SetVisibility(ESlateVisibility::Hidden);
@@ -196,10 +201,8 @@ void AYSH_Player::OnActionFire()
 	// 만약 스나이퍼가 아니라면
 	if (false == bChooseSniperGun)
 	{
-		FTransform t = gunMeshComp->GetSocketTransform(TEXT("FirePosition"));
-		GetWorld()->SpawnActor<AYSH_BulletActor>(bulletFactory, t);
 		setGreMagazin();
-		UE_LOG(LogTemp, Warning, TEXT("Fired with gun. CurrentGreMagazin: %d"), CurrentGreMagazin);
+		//UE_LOG(LogTemp, Warning, TEXT("Fired with gun. CurrentGreMagazin: %d"), CurrentGreMagazin);
 	}
 	// 그렇지 않다면 LineTrace 
 	else
@@ -297,6 +300,8 @@ void AYSH_Player::setGreMagazin()
 {
 	if (CurrentGreMagazin > 0)
 	{
+		FTransform t = gunMeshComp->GetSocketTransform(TEXT("FirePosition"));
+		GetWorld()->SpawnActor<AYSH_BulletActor>(bulletFactory, t);
 		// 현재 총알이 존재한다면 -1 해라.
 		CurrentGreMagazin -= 1;
 	}
@@ -309,6 +314,7 @@ void AYSH_Player::setGreMagazin()
 		{
 			// 여기서 리로딩 위젯이 나와야 할 것 같다.
 			reloadUI->SetVisibility(ESlateVisibility::Visible);
+			reloadUI->BindToAnimationStarted(reloadAnim, StartDelegate);
 
 			// 재장전 해라. 현재 탄창에 50발을 넣는다.
 			CurrentGreMagazin = GreMagazin;
