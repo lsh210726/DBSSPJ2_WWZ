@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
+#include "LSH_EnemyFSM.h"
 #include "LSH_EnemyAnim.generated.h"
 
 /**
@@ -13,5 +14,21 @@ UCLASS()
 class WWZ_API ULSH_EnemyAnim : public UAnimInstance
 {
 	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "FSM")
+	EEnemyState animState;
 	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "FSM")
+	bool bAttackPlay = false;
+
+	UFUNCTION(BlueprintCallable, Category = "FSMEvent")
+	void OnEndAttackAnimation();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "FSMEvent")
+	void PlayDamageAnim(FName sectionName);
+
+	//죽음 상태 애니메이션 종료 여부
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "FSM")
+	bool bDieDone = false;
 };

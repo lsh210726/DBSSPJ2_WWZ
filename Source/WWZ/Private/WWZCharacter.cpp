@@ -143,7 +143,7 @@ void AWWZCharacter::Fire(const FInputActionValue& Value)
 {
 	FVector startPos = FollowCamera->GetComponentLocation();
 	FVector endPos = FollowCamera->GetComponentLocation()+ FollowCamera->GetForwardVector()*5000;
-	DrawDebugLine(GetWorld(), startPos, endPos, FColor::Emerald, true, 1.0F, 0, 1);
+	DrawDebugLine(GetWorld(), startPos, endPos, FColor::Emerald, false,1);
 	FHitResult hitInfo;
 	FCollisionQueryParams params;
 	params.AddIgnoredActor(this);
@@ -151,7 +151,7 @@ void AWWZCharacter::Fire(const FInputActionValue& Value)
 	if (bHit)
 	{
 		UE_LOG(LogTemp, Log, TEXT("%s"), *hitInfo.GetActor()->GetName());
-		DrawDebugPoint(GetWorld(), hitInfo.ImpactPoint, 10, FColor(52, 220, 239), true,1.0F);
+		DrawDebugPoint(GetWorld(), hitInfo.ImpactPoint, 10, FColor(52, 220, 239), false,1.0F);
 		auto enemy = hitInfo.GetActor()->GetDefaultSubobjectByName(TEXT("FSM"));
 		if (enemy)
 		{
