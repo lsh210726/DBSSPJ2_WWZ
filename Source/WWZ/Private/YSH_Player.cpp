@@ -13,6 +13,8 @@
 #include "Engine/World.h"
 #include "Blueprint/UserWidget.h"
 #include "Animation/WidgetAnimation.h"
+#include "ReloadUserWidget.h"
+#include "AimUserWidget.h"
 
 
 // Sets default values
@@ -95,13 +97,13 @@ void AYSH_Player::BeginPlay()
 {
 	Super::BeginPlay();
 
-	crossHairUI = CreateWidget(GetWorld(), crossHairFactory);
+	crossHairUI = Cast<UAimUserWidget>(CreateWidget(GetWorld(), crossHairFactory));
 	crossHairUI->AddToViewport();
 
 	sniperUI = CreateWidget(GetWorld(), sniperFactory);
 	sniperUI->AddToViewport();
 
-	reloadUI = CreateWidget(GetWorld(), reloadFactory);
+	reloadUI = Cast<UReloadUserWidget>(CreateWidget(GetWorld(), reloadFactory));
 	reloadUI->AddToViewport();
 
 	playerUI = CreateWidget(GetWorld(), playerFactory);
@@ -110,6 +112,7 @@ void AYSH_Player::BeginPlay()
 	// 태어날 때 기본조준(CrossHair UI)만 보이게하고싶다
 	sniperUI->SetVisibility(ESlateVisibility::Hidden);
 	reloadUI->SetVisibility(ESlateVisibility::Hidden);
+	
 
 	// 총을 교체하면 ZoomOut을 하고싶다.
 
@@ -314,7 +317,8 @@ void AYSH_Player::setGreMagazin()
 		{
 			// 여기서 리로딩 위젯이 나와야 할 것 같다.
 			reloadUI->SetVisibility(ESlateVisibility::Visible);
-			reloadUI->BindToAnimationStarted(reloadAnim, StartDelegate);
+			
+			reloadUI->ReloadPlayAnimation();
 
 			// 재장전 해라. 현재 탄창에 50발을 넣는다.
 			CurrentGreMagazin = GreMagazin;

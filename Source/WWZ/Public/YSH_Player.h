@@ -4,8 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "../../../../../../../Source/Runtime/Engine/Classes/Components/SkeletalMeshComponent.h"
-#include "../../../../../../../Source/Runtime/UMG/Public/Blueprint/UserWidget.h"
 #include "YSH_Player.generated.h"
 
 UCLASS()
@@ -78,7 +76,7 @@ public:
 	TSubclassOf<class UUserWidget> sniperFactory;
 
 	UPROPERTY()
-	class UUserWidget* crossHairUI;
+	class UAimUserWidget* crossHairUI;
 
 	UPROPERTY()
 	class UUserWidget* sniperUI;
@@ -101,7 +99,7 @@ public:
 	//리로딩 UI 업로드
 
 	UPROPERTY()
-	class UUserWidget* reloadUI;
+	class UReloadUserWidget* reloadUI;
 
 	UPROPERTY( EditAnywhere )
 	TSubclassOf<class UUserWidget> reloadFactory;
@@ -126,10 +124,5 @@ public:
 
 	UPROPERTY( EditAnywhere )
 	TSubclassOf<class UUserWidget> playerFactory;
-
-	public:
-	UPROPERTY(BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
-	class UWidgetAnimation* reloadAnim;
-	FWidgetAnimationDynamicEvent StartDelegate;
 
 };
