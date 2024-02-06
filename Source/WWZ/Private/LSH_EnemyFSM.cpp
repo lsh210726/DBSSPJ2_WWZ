@@ -12,6 +12,8 @@
 #include "Navigation/PathFollowingComponent.h"
 #include "NavigationSystem.h"
 #include "NavFilters/NavigationQueryFilter.h"
+#include "Kismet/KismetMathLibrary.h"
+
 
 
 
@@ -47,7 +49,7 @@ void ULSH_EnemyFSM::BeginPlay()
 	//AAIController 할당하기
 	ai = Cast<AAIController>(me->GetController());
 
-	me->GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &ULSH_EnemyFSM::ClimbZoneOverlap);
+	//me->GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &ULSH_EnemyFSM::ClimbZoneOverlap);
 	me->GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &ULSH_EnemyFSM::ClimbZoneEndOverlap);
 }
 
@@ -111,15 +113,14 @@ void ULSH_EnemyFSM::MoveState()
 	FVector destination =  climbMode ? climbZone->GetActorLocation() : target->GetActorLocation();
 	//FVector destination = targetLoc;
 	FVector dir = destination - me->GetActorLocation();
-	UE_LOG(LogTemp, Warning, TEXT("%f"), dir.Length());
 	//이동
 	//me->AddMovementInput(dir.GetSafeNormal());
 	ai->MoveToLocation(destination);
 
 	DrawDebugPoint(GetWorld(), destination, 20, FColor::Purple, false, GetWorld()->GetDeltaSeconds());
 
-	//공격 가능 거리에 플레이어가 있다면
-	if (dir.Size() < attackRange)
+	//오르기 모드가 아니고 공격 가능 거리에 플레이어가 있다면
+	if (!climbMode && dir.Size() < attackRange)
 	{
 		//공격 상태로 전환
 		mState = EEnemyState::Attack;
@@ -131,18 +132,13 @@ void ULSH_EnemyFSM::MoveState()
 		currentTime = attackDelayTime;
 	}
 
-	if (!isInMaxSpeed && me->GetVelocity().Size() > 500)
+
+	//만약 이동속도가 100 이하라면 > 벽에 막힌다면
+	if (me->GetVelocity().Size() < 100)
 	{
-		isInMaxSpeed = true;
+		//주변에 오르기 가능한 위치를 찾는다
+		FindClimbPoint();
 	}
-	////만약 이동속도가 100 이하라면 > 벽에 막힌다면
-	//if (isInMaxSpeed && me->GetVelocity().Size() < 100)
-	//{
-	//	//멈추기 상태로 전환
-	//	mState = EEnemyState::Idle;
-	//	//애니메이션 상태 동기화
-	//	anim->animState = mState;
-	//}
 }
 void ULSH_EnemyFSM::AttackState()
 {
@@ -315,4 +311,26 @@ void ULSH_EnemyFSM::itHasPath()
 
 	return;
 
+}
+
+void ULSH_EnemyFSM::FindClimbPoint()
+{
+	for(int i=0;i<=360;i+=30)
+	{
+		FVector startPos = me->GetActorLocation();
+		FVector endPos = startPos + UKismetMathLibrary::GetForwardVector(me->GetActorRotation()+FRotator(0,i,0)) * me->climbDistance;
+		DrawDebugLine(GetWorld(), startPos, endPos, FColor::Emerald, false, 1);
+		FHitResult hitInfo;
+		FCollisionQueryParams params;
+		params.AddIgnoredActor(me);
+		bool bHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECC_Visibility, params);
+		if (bHit)//캐스트로 힛액터가 좀비나 클라임존인지 확인 필요...
+		{
+			DrawDebugPoint(GetWorld(), hitInfo.ImpactPoint, 5, FColor::Silver, false, 2);
+
+			ai->MoveToLocation(hitInfo.ImpactPoint);
+			//위치로 도달했다면 올라가기 액션 수행할 것...
+		}
+
+	}
 }

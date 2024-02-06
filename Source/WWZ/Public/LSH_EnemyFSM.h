@@ -83,8 +83,6 @@ public:
 	UPROPERTY()
 	class AAIController* ai;
 
-	bool isInMaxSpeed = false;
-
 	UFUNCTION()
 	void ClimbZoneOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
@@ -102,4 +100,7 @@ public:
 	void itHasPath();
 
 	bool climbMode=true;
+
+	UFUNCTION()
+	void FindClimbPoint();
 };
