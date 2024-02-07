@@ -50,7 +50,7 @@ void ULSH_EnemyFSM::BeginPlay()
 	ai = Cast<AAIController>(me->GetController());
 
 	//me->GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &ULSH_EnemyFSM::ClimbZoneOverlap);
-	me->GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &ULSH_EnemyFSM::ClimbZoneEndOverlap);
+	//me->GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &ULSH_EnemyFSM::ClimbZoneEndOverlap);
 }
 
 
@@ -130,16 +130,26 @@ void ULSH_EnemyFSM::MoveState()
 		anim->bAttackPlay = true;
 		//공격 상태 전환 시 대기 시간이 바로 끝나도록 처리
 		currentTime = attackDelayTime;
-	}
+	} 
 
+	auto speed = me->GetVelocity().Size();
+
+	if (speed > 100) isMoving = true;
 
 	//만약 이동속도가 100 이하라면 > 벽에 막힌다면
-	if (me->GetVelocity().Size() < 100)
+	if (isMoving && me->GetVelocity().Size() < 100)
 	{
-		//주변에 오르기 가능한 위치를 찾는다
-		FindClimbPoint();
+		currentTime += GetWorld()->DeltaTimeSeconds;
+		if (currentTime > 0.3)
+		{
+			//주변에 오르기 가능한 위치를 찾는다
+			FindClimbPoint();
+			currentTime = 0;
+			isMoving = false;
+		}
 	}
 }
+
 void ULSH_EnemyFSM::AttackState()
 {
 	//일정 시간마다 공격
@@ -236,7 +246,11 @@ void ULSH_EnemyFSM::ClimbState()
 	//FVector vt = FVector::UpVector * dieSpeed * GetWorld()->DeltaTimeSeconds;
 	//FVector P = P0 + vt;
 	//me->SetActorLocation(P);
+	// 
+	// 
 	me->ClimbMovement(me->GetActorUpVector());
+
+
 }
 
 
@@ -286,6 +300,14 @@ void ULSH_EnemyFSM::ClimbUpEvent()
 {
 	//기어올라가기 애니메이션 몽타지 재생
 	//anim->PlayClimbUpAnim();
+
+
+	//오르기 상태로 전환
+	mState = EEnemyState::Move;
+	//애니메이션 상태 동기화
+	anim->animState = mState;
+
+	climbMode = false;
 }
 
 
@@ -317,8 +339,10 @@ void ULSH_EnemyFSM::FindClimbPoint()
 {
 	for(int i=0;i<=360;i+=30)
 	{
+		UE_LOG(LogTemp, Log, TEXT("%f"), me->climbDistance);
+
 		FVector startPos = me->GetActorLocation();
-		FVector endPos = startPos + UKismetMathLibrary::GetForwardVector(me->GetActorRotation()+FRotator(0,i,0)) * me->climbDistance;
+		FVector endPos = startPos + (UKismetMathLibrary::GetForwardVector(me->GetActorRotation()+FRotator(0,i,0)) * me->climbDistance);
 		DrawDebugLine(GetWorld(), startPos, endPos, FColor::Emerald, false, 1);
 		FHitResult hitInfo;
 		FCollisionQueryParams params;
@@ -328,9 +352,45 @@ void ULSH_EnemyFSM::FindClimbPoint()
 		{
 			DrawDebugPoint(GetWorld(), hitInfo.ImpactPoint, 5, FColor::Silver, false, 2);
 
-			ai->MoveToLocation(hitInfo.ImpactPoint);
+			//ai->MoveToLocation(hitInfo.ImpactPoint);
+
+
+			auto f1 = hitInfo.Normal * me->GetCapsuleComponent()->GetScaledCapsuleRadius();
+			auto f2 = f1 + hitInfo.Location;
+
+			// 벽에 찰싹 달라붙게
+			auto r1 = UKismetMathLibrary::MakeRotFromX(-hitInfo.Normal);
+			//auto r1 = me->GetActorRotation() + FRotator(0, i, 0)*-1;
+			FLatentActionInfo Info;
+			Info.CallbackTarget = this;
+			Info.ExecutionFunction = TEXT("OnMoveCompleted"); // 이동 완료 후 실행할 함수 이름
+			Info.Linkage = 0; // 대기열에서 이 기능의 위치
+			//오르기 상태로 전환
+			mState = EEnemyState::Climb;
+			UKismetSystemLibrary::MoveComponentTo(
+				me->GetCapsuleComponent(),
+				f2,
+				r1,
+				false,
+				false,
+				0.2f,
+				false,
+				EMoveComponentAction::Type::Move,
+				Info
+			);
+			break;
 			//위치로 도달했다면 올라가기 액션 수행할 것...
 		}
 
 	}
+}
+
+void ULSH_EnemyFSM::OnMoveCompleted()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("찰싹!"));
+
+
+	//애니메이션 상태 동기화
+	anim->animState = mState;
+	me->ClimbAction();
 }

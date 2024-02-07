@@ -33,7 +33,7 @@ public:
 	bool ClimbAction();
 
 	UPROPERTY(EditAnywhere, Category = "climb")
-	float climbDistance = 50;
+	float climbDistance = 10.0f;
 
 	UFUNCTION()
 	void ClimbMovement(FVector worldDir);
@@ -51,4 +51,7 @@ public:
 	
 	UFUNCTION()
 	void StopClimb();
+
+	UFUNCTION()
+	void ClimbUpCompleted();
 };

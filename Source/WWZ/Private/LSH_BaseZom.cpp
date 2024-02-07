@@ -66,46 +66,48 @@ void ALSH_BaseZom::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 bool ALSH_BaseZom::ClimbAction()
 {
 	auto CharMov = GetCharacterMovement();
-	//만약 현재 이동모드가 플라잉이 아니라면 기어오르기모드(플라잉)
-	if(CharMov->MovementMode != EMovementMode::MOVE_Flying)
-	{
-		FVector startPos = GetActorLocation()+FVector(0,0,100);
-		FVector endPos = startPos + GetActorForwardVector() * climbDistance;
-		DrawDebugLine(GetWorld(), startPos, endPos, FColor::Emerald, false, 1);
-		FHitResult hitInfo;
-		FCollisionQueryParams params;
-		params.AddIgnoredActor(this);
-		bool bHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECC_Visibility, params);
-		if (bHit)
-		{
-			//날기 상태로 바꾸기
-			CharMov->SetMovementMode(MOVE_Flying);
-			//회전 비활성화
-			CharMov->bOrientRotationToMovement = false;
+	////만약 현재 이동모드가 플라잉이 아니라면 기어오르기모드(플라잉)
+	//if(CharMov->MovementMode != EMovementMode::MOVE_Flying)
+	//{
+	//	FVector startPos = GetActorLocation()+FVector(0,0,100);
+	//	FVector endPos = startPos + GetActorForwardVector() * climbDistance;
+	//	DrawDebugLine(GetWorld(), startPos, endPos, FColor::Emerald, false, 1);
+	//	FHitResult hitInfo;
+	//	FCollisionQueryParams params;
+	//	params.AddIgnoredActor(this);
+	//	bool bHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECC_Visibility, params);
+	//	if (bHit)
+	//	{
+	//		//날기 상태로 바꾸기
+	//		CharMov->SetMovementMode(MOVE_Flying);
+	//		//회전 비활성화
+	//		CharMov->bOrientRotationToMovement = false;
 
-			auto f1 = hitInfo.Normal * GetCapsuleComponent()->GetScaledCapsuleRadius();
-			auto f2 = f1 + hitInfo.Location;
-			//GetCapsuleComponent()
+	//		auto f1 = hitInfo.Normal * GetCapsuleComponent()->GetScaledCapsuleRadius();
+	//		auto f2 = f1 + hitInfo.Location;
+	//		//GetCapsuleComponent()
 
-			//벽에 찰싹 달라붙게
-			auto r1 = UKismetMathLibrary::MakeRotFromX(hitInfo.Normal * -1.0f);
-			FLatentActionInfo Info;
-			Info.CallbackTarget = this;
-			UKismetSystemLibrary::MoveComponentTo(
-				GetCapsuleComponent(),
-				f2,
-				r1,
-				false,
-				false,
-				0.2f,
-				false,
-				EMoveComponentAction::Type::Move,
-				Info
-			);
-			doOnce = false;
-			return true;
-		}
-	}
+	//		//벽에 찰싹 달라붙게
+	//		auto r1 = UKismetMathLibrary::MakeRotFromX(hitInfo.Normal * -1.0f);
+	//		FLatentActionInfo Info;
+	//		Info.CallbackTarget = this;
+	//		UKismetSystemLibrary::MoveComponentTo(
+	//			GetCapsuleComponent(),
+	//			f2,
+	//			r1,
+	//			false,
+	//			false,
+	//			0.2f,
+	//			false,
+	//			EMoveComponentAction::Type::Move,
+	//			Info
+	//		);
+	//		doOnce = false;
+	//		return true;
+	//	}
+	//}
+	CharMov->SetMovementMode(MOVE_Flying);
+	CharMov->bOrientRotationToMovement = false;
 	return false;
 }
 
@@ -121,7 +123,7 @@ void ALSH_BaseZom::ClimbMovement(FVector worldDir)
 	if (bHit)
 	{
 		AddMovementInput(worldDir, climbSpeed);
-		auto r1 = UKismetMathLibrary::MakeRotFromX(hitInfo.Normal * -1.0f);
+		auto r1 = UKismetMathLibrary::MakeRotFromX(-hitInfo.Normal);
 		SetActorRotation(UKismetMathLibrary::RLerp(GetActorRotation(), r1, 0.2, false));
 		DrawDebugPoint(GetWorld(), hitInfo.ImpactPoint, 10, FColor(52, 220, 239), false, 1.0F);
 
@@ -152,6 +154,8 @@ void ALSH_BaseZom::LedgeMantleCalc(FVector startLoc)
 				DrawDebugPoint(GetWorld(), hitInfo.Location + FVector(0, 0, 90), 10, FColor::Yellow, false, 7.0F);
 				FLatentActionInfo Info;
 				Info.CallbackTarget = this;
+				Info.ExecutionFunction = TEXT("ClimbUpCompleted"); // 이동 완료 후 실행할 함수 이름
+				Info.Linkage = 0; // 대기열에서 이 기능의 위치
 				UKismetSystemLibrary::MoveComponentTo(
 					GetCapsuleComponent(),
 					hitInfo.Location + FVector(0, 0, 90),
@@ -163,7 +167,7 @@ void ALSH_BaseZom::LedgeMantleCalc(FVector startLoc)
 					EMoveComponentAction::Type::Move,
 					Info
 				);
-				fsm->ClimbUpEvent();
+				//fsm->ClimbUpEvent();
 				doOnce = true;
 				break;
 			}
@@ -180,4 +184,10 @@ void ALSH_BaseZom::StopClimb()
 	//회전 비활성화
 	CharMov->bOrientRotationToMovement = true;
 	SetActorRotation(FRotator(0, GetActorRotation().Yaw, 0));
+}
+
+void ALSH_BaseZom::ClimbUpCompleted()
+{
+	StopClimb();
+	fsm->ClimbUpEvent();
 }

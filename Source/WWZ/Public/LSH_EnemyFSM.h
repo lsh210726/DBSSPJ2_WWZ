@@ -103,4 +103,9 @@ public:
 
 	UFUNCTION()
 	void FindClimbPoint();
+
+	UFUNCTION()
+	void OnMoveCompleted();
+
+	bool isMoving = false;
 };
