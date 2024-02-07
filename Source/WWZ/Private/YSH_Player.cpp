@@ -222,16 +222,14 @@ void AYSH_Player::OnActionFire()
 			GetWorld()->SpawnActor<AYSH_BulletActor>(bulletFactory, t);
 			CurrentGreMagazin -= 1;
 			crossHairUI->WhiteAimInvisible();
-
 			// 총알을 발사한 후에 탄창이 비어있으면 재장전을 시작합니다.
 			if (CurrentGreMagazin == 0)
 			{
 				StartReloadGre();
 			}
 		}
-		else if (bCanFire && CurrentGreMagazin == 1)
+		else if (CurrentGreMagazin == 0) 
 		{
-			// 탄창이 비어있으면 재장전을 시작합니다.
 			StartReloadGre();
 		}
 	}
@@ -265,26 +263,23 @@ void AYSH_Player::OnActionFire()
 
 			CurrentSnaMagazin -= 1;
 			crossHairUI->WhiteAimInvisible();
-
 			// 총알을 발사한 후에 탄창이 비어있으면 재장전을 시작합니다.
 			if (CurrentSnaMagazin == 0)
 			{
 				StartReloadSna();
 			}
-		}
-		else if (bCanFire && CurrentSnaMagazin == 1)
+			
+		}else if (CurrentSnaMagazin == 0)
 		{
-			// 탄창이 비어있으면 재장전을 시작합니다.
 			StartReloadSna();
 		}
-
 	}
 }
 
 
 void AYSH_Player::StartReloadGre()
 {
-	if (bCanFire && totalGreMagazin > 1)
+	if (bCanFire && CurrentGreMagazin == 0)
 	{
 		// 리로딩 시작
 		BeginReloadGre();
@@ -323,7 +318,7 @@ void AYSH_Player::BeginReloadGre()
 
 void AYSH_Player::StartReloadSna()
 {
-	if (bCanFire && totalSnaMagazin > 1)
+	if (bCanFire && CurrentSnaMagazin == 0 )
 	{
 		// 리로딩 시작
 		BeginReloadSna();
@@ -333,8 +328,8 @@ void AYSH_Player::StartReloadSna()
 void AYSH_Player::ReloadCompleteSna()
 {
 	// 탄창을 교체하고 재장전 UI를 숨깁니다.
-	CurrentGreMagazin = FMath::Min(totalGreMagazin, GreMagazin);
-	totalGreMagazin -= CurrentGreMagazin;
+	CurrentSnaMagazin = FMath::Min(totalSnaMagazin, SnaMagazin);
+	totalSnaMagazin -= CurrentSnaMagazin;
 	reloadUI->SetVisibility(ESlateVisibility::Hidden);
 
 	// 재장전이 완료되면 다시 총을 쏠 수 있도록 허용합니다.
