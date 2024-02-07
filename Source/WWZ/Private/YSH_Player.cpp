@@ -131,6 +131,10 @@ void AYSH_Player::BeginPlay()
 	CurrentGreMagazin = 10;
 	totalGreMagazin = 100;
 
+	SnaMagazin = 2;
+	CurrentSnaMagazin = 2;
+	totalSnaMagazin = 20;
+
 }
 
 // Called every frame
@@ -210,37 +214,84 @@ void AYSH_Player::OnActionFire()
 {
 	crossHairUI->WhiteAimVisible();
 
-	if (bCanFire && CurrentGreMagazin > 0)
-	{
-		FTransform t = gunMeshComp->GetSocketTransform(TEXT("FirePosition"));
-		GetWorld()->SpawnActor<AYSH_BulletActor>(bulletFactory, t);
-		CurrentGreMagazin -= 1;
-		crossHairUI->WhiteAimInvisible();
+	if (false == bChooseSniperGun) {
 
-		// 총알을 발사한 후에 탄창이 비어있으면 재장전을 시작합니다.
-		if (CurrentGreMagazin == 0)
+		if (bCanFire && CurrentGreMagazin > 0)
 		{
-			StartReload();
+			FTransform t = gunMeshComp->GetSocketTransform(TEXT("FirePosition"));
+			GetWorld()->SpawnActor<AYSH_BulletActor>(bulletFactory, t);
+			CurrentGreMagazin -= 1;
+			crossHairUI->WhiteAimInvisible();
+
+			// 총알을 발사한 후에 탄창이 비어있으면 재장전을 시작합니다.
+			if (CurrentGreMagazin == 0)
+			{
+				StartReloadGre();
+			}
+		}
+		else if (bCanFire && CurrentGreMagazin == 1)
+		{
+			// 탄창이 비어있으면 재장전을 시작합니다.
+			StartReloadGre();
 		}
 	}
-	else if (bCanFire && CurrentGreMagazin == 1)
+	else
 	{
-		// 탄창이 비어있으면 재장전을 시작합니다.
-		StartReload();
+		if (bCanFire && CurrentSnaMagazin > 0)
+		{
+			FHitResult outHit;
+			FVector start = cameraComp->GetComponentLocation();
+			FVector end = start + cameraComp->GetForwardVector() * 100000;
+			FCollisionQueryParams params;
+			params.AddIgnoredActor(this);
+
+			bool bReturnValue = GetWorld()->LineTraceSingleByChannel(outHit, start, end, ECollisionChannel::ECC_Visibility, params);
+			if (bReturnValue)
+			{
+				DrawDebugLine(GetWorld(), outHit.TraceStart, outHit.ImpactPoint, FColor::Red, false, 5);
+				//부딪힌 컴포넌트를 가져와서
+				UPrimitiveComponent* hitComp = outHit.GetComponent();
+				//컴포넌트가 있다, 그리고 컴포넌트의 물리가 켜져있다면
+				if (hitComp && hitComp->IsSimulatingPhysics())
+				{
+					//그 컴포넌트에게 힘(impact normal의 반대방향)을 가하고 싶다.
+					FVector dir = end - start;
+					hitComp->AddForce(dir.GetSafeNormal() * 500000 * hitComp->GetMass());
+
+				}
+				//부딪힌 곳에 expVFX를 생성해서 배치하고 싶다.
+				//outHit.ImpactPoint
+			}
+
+			CurrentSnaMagazin -= 1;
+			crossHairUI->WhiteAimInvisible();
+
+			// 총알을 발사한 후에 탄창이 비어있으면 재장전을 시작합니다.
+			if (CurrentSnaMagazin == 0)
+			{
+				StartReloadSna();
+			}
+		}
+		else if (bCanFire && CurrentSnaMagazin == 1)
+		{
+			// 탄창이 비어있으면 재장전을 시작합니다.
+			StartReloadSna();
+		}
+
 	}
 }
 
 
-void AYSH_Player::StartReload()
+void AYSH_Player::StartReloadGre()
 {
 	if (bCanFire && totalGreMagazin > 1)
 	{
 		// 리로딩 시작
-		BeginReload();
+		BeginReloadGre();
 	}
 }
 
-void AYSH_Player::ReloadComplete()
+void AYSH_Player::ReloadCompleteGre()
 {
 	// 탄창을 교체하고 재장전 UI를 숨깁니다.
 	CurrentGreMagazin = FMath::Min(totalGreMagazin, GreMagazin);
@@ -251,7 +302,7 @@ void AYSH_Player::ReloadComplete()
 	bCanFire = true;
 }
 
-void AYSH_Player::BeginReload()
+void AYSH_Player::BeginReloadGre()
 {
 	// 리로딩 시작
 	bCanFire = false;
@@ -263,11 +314,50 @@ void AYSH_Player::BeginReload()
 
 	// 딜레이 후 재장전 완료
 	FTimerHandle TimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AYSH_Player::ReloadComplete, ReloadTime, false);
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AYSH_Player::ReloadCompleteGre, ReloadTime, false);
 
 	// 탄창 재충전
 	CurrentGreMagazin = GreMagazin;
 	totalGreMagazin -= GreMagazin;
+}
+
+void AYSH_Player::StartReloadSna()
+{
+	if (bCanFire && totalSnaMagazin > 1)
+	{
+		// 리로딩 시작
+		BeginReloadSna();
+	}
+}
+
+void AYSH_Player::ReloadCompleteSna()
+{
+	// 탄창을 교체하고 재장전 UI를 숨깁니다.
+	CurrentGreMagazin = FMath::Min(totalGreMagazin, GreMagazin);
+	totalGreMagazin -= CurrentGreMagazin;
+	reloadUI->SetVisibility(ESlateVisibility::Hidden);
+
+	// 재장전이 완료되면 다시 총을 쏠 수 있도록 허용합니다.
+	bCanFire = true;
+}
+
+void AYSH_Player::BeginReloadSna()
+{
+	// 리로딩 시작
+	bCanFire = false;
+	crossHairUI->WhiteAimInvisible();
+
+	// 리로딩 UI 표시 및 애니메이션 재생
+	reloadUI->SetVisibility(ESlateVisibility::Visible);
+	reloadUI->ReloadPlayAnimation();
+
+	// 딜레이 후 재장전 완료
+	FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AYSH_Player::ReloadCompleteSna, ReloadTime, false);
+
+	// 탄창 재충전
+	CurrentSnaMagazin = SnaMagazin;
+	totalSnaMagazin -= SnaMagazin;
 }
 
 

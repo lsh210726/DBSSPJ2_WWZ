@@ -63,6 +63,14 @@ public:
 
 	void OnActionFire();
 
+	void StartReloadGre();
+	void ReloadCompleteGre();
+	void BeginReloadGre();
+
+	void StartReloadSna();
+	void ReloadCompleteSna();
+	void BeginReloadSna();
+
 	void OnActionChooseGrenadeGun();
 	void OnActionChooseSniperGun();
 	void OnActionChooseChainsaw();
@@ -89,6 +97,7 @@ public:
 	FORCEINLINE void OnActionZoomOut();
 
 	/// <summary> true면 SniperGun, false면 GrenadeGun </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bChooseSniperGun = false; //true면 SniperGun, false면 GrenadeGun
 
 	//십자가 키고, 끄기
@@ -113,9 +122,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int totalGreMagazin = 100;
 
-	void StartReload();
-	void ReloadComplete();
-	void BeginReload();
+
 	//hp, magazine 관련 ui
 	UPROPERTY()
 	class UPlayerUserWidget* playerUI;
@@ -127,4 +134,12 @@ public:
 	bool bCanFire = true;    // 현재 총을 발사할 수 있는지 여부
 	float AimLoadTime = 0.2f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int CurrentSnaMagazin = 2;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int SnaMagazin = 2;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int totalSnaMagazin = 10;
 };
