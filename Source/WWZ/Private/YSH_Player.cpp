@@ -15,6 +15,8 @@
 #include "Animation/WidgetAnimation.h"
 #include "ReloadUserWidget.h"
 #include "AimUserWidget.h"
+#include "SniperUserWidget.h"
+
 
 
 // Sets default values
@@ -97,13 +99,16 @@ void AYSH_Player::BeginPlay()
 {
 	Super::BeginPlay();
 
-	crossHairUI = Cast<UAimUserWidget>(CreateWidget(GetWorld(), crossHairFactory));
+	auto crossHairWidget = CreateWidget(GetWorld(), crossHairFactory);
+	crossHairUI = Cast<UAimUserWidget>(crossHairWidget);
 	crossHairUI->AddToViewport();
 
-	sniperUI = CreateWidget(GetWorld(), sniperFactory);
+	auto sniperWidget = CreateWidget(GetWorld(), sniperFactory);
+	sniperUI = Cast<USniperUserWidget>(sniperWidget);
 	sniperUI->AddToViewport();
 
-	reloadUI = Cast<UReloadUserWidget>(CreateWidget(GetWorld(), reloadFactory));
+	auto reloadWidget = CreateWidget(GetWorld(), reloadFactory);
+	reloadUI = Cast<UReloadUserWidget>(reloadWidget);
 	reloadUI->AddToViewport();
 
 	playerUI = CreateWidget(GetWorld(), playerFactory);

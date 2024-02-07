@@ -79,7 +79,7 @@ public:
 	class UAimUserWidget* crossHairUI;
 
 	UPROPERTY()
-	class UUserWidget* sniperUI;
+	class USniperUserWidget* sniperUI;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float targetFOV=90;
