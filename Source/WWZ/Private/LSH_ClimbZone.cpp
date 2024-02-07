@@ -10,6 +10,11 @@ ALSH_ClimbZone::ALSH_ClimbZone()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	boxComp = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComp"));
+	SetRootComponent(boxComp);
+	boxComp->SetMobility(EComponentMobility::Static);
+
+	boxComp->SetCollisionProfileName(TEXT("ClimbZone"));
 }
 
 // Called when the game starts or when spawned

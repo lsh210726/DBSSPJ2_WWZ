@@ -105,6 +105,7 @@ void ULSH_EnemyFSM::IdleState()
 void ULSH_EnemyFSM::MoveState() 
 {
 	FVector destination =  climbMode ? climbZone->GetActorLocation() : target->GetActorLocation();
+	//FVector destination =  (target->GetActorLocation().Z-me->GetActorLocation().Z>10) ? climbZone->GetActorLocation() : target->GetActorLocation();
 	//FVector destination = targetLoc;
 	FVector dir = destination - me->GetActorLocation();
 	//이동
@@ -128,14 +129,19 @@ void ULSH_EnemyFSM::MoveState()
 
 	auto speed = me->GetVelocity().Size();
 
+		UE_LOG(LogTemp, Log, TEXT("%f"),FVector::Distance(destination, me->GetActorLocation()));
 	//만약 오르기 모드고 목적지와 거리가 100 이하고 속도가 100 아래라면
-	if (climbMode && FVector::Distance(destination, me->GetActorLocation())<100 && me->GetVelocity().Size() < 100)
+	if (climbMode && FVector::Distance(destination, me->GetActorLocation())<400 && me->GetVelocity().Size() < 100)
 	{
-		UE_LOG(LogTemp, Log, TEXT("distance = %f"), FVector::Distance(destination, me->GetActorLocation()));
+
 			//오르기 상태로 전환
 			mState = EEnemyState::Climb;
 			//주변에 오르기 가능한 위치를 찾는다
-			FindClimbPoint();
+			//FindClimbPoint();
+
+			//애니메이션 상태 동기화
+			anim->animState = mState;
+
 			currentTime = 0;
 			isMoving = false;
 	}
@@ -231,7 +237,13 @@ void ULSH_EnemyFSM::OnDamageProcess()
 
 void ULSH_EnemyFSM::ClimbState()
 {
-	me->ClimbMovement(me->GetActorUpVector());
+	ai->StopMovement();
+
+	//me->ClimbMovement(me->GetActorUpVector());
+	//클라임존을 향한 방향벡터
+	/*FVector dir = climbZone->GetActorLocation() - me->GetActorLocation();
+	dir.Normalize();*/
+	me->ClimbMovement(climbZone->GetActorLocation());
 
 }
 
