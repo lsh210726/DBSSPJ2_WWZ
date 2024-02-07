@@ -16,6 +16,7 @@
 #include "ReloadUserWidget.h"
 #include "AimUserWidget.h"
 #include "SniperUserWidget.h"
+#include "PlayerUserWidget.h"
 
 
 
@@ -102,6 +103,7 @@ void AYSH_Player::BeginPlay()
 	auto crossHairWidget = CreateWidget(GetWorld(), crossHairFactory);
 	crossHairUI = Cast<UAimUserWidget>(crossHairWidget);
 	crossHairUI->AddToViewport();
+	crossHairUI->WhiteAimInvisible();
 
 	auto sniperWidget = CreateWidget(GetWorld(), sniperFactory);
 	sniperUI = Cast<USniperUserWidget>(sniperWidget);
@@ -111,7 +113,8 @@ void AYSH_Player::BeginPlay()
 	reloadUI = Cast<UReloadUserWidget>(reloadWidget);
 	reloadUI->AddToViewport();
 
-	playerUI = CreateWidget(GetWorld(), playerFactory);
+	auto playerWidget = CreateWidget(GetWorld(), playerFactory);
+	playerUI = Cast<UPlayerUserWidget>(playerWidget);
 	playerUI->AddToViewport();
 
 	// 태어날 때 기본조준(CrossHair UI)만 보이게하고싶다
@@ -205,48 +208,68 @@ void AYSH_Player::OnActionJump()
 
 void AYSH_Player::OnActionFire()
 {
+	crossHairUI->WhiteAimVisible();
 
-	// 만약 스나이퍼가 아니라면
-	if (false == bChooseSniperGun)
+	if (bCanFire && CurrentGreMagazin > 0)
 	{
-		setGreMagazin();
-		//UE_LOG(LogTemp, Warning, TEXT("Fired with gun. CurrentGreMagazin: %d"), CurrentGreMagazin);
-	}
-	// 그렇지 않다면 LineTrace 
-	else
-	{
-		FHitResult outHit;
-		FVector start = cameraComp->GetComponentLocation();
-		FVector end = start + cameraComp->GetForwardVector() * 100000;
-		FCollisionQueryParams params;
-		params.AddIgnoredActor(this);
+		FTransform t = gunMeshComp->GetSocketTransform(TEXT("FirePosition"));
+		GetWorld()->SpawnActor<AYSH_BulletActor>(bulletFactory, t);
+		CurrentGreMagazin -= 1;
+		crossHairUI->WhiteAimInvisible();
 
-		bool bReturnValue = GetWorld()->LineTraceSingleByChannel(outHit, start, end, ECollisionChannel::ECC_Visibility, params);
-
-		// 만약 부딪힌 것이 있다면
-		if (bReturnValue)
+		// 총알을 발사한 후에 탄창이 비어있으면 재장전을 시작합니다.
+		if (CurrentGreMagazin == 0)
 		{
-			DrawDebugLine(GetWorld(), outHit.TraceStart, outHit.ImpactPoint, FColor::Red, false, 10);
-			// 부딪힌 컴포넌트를 가져와서
-			UPrimitiveComponent* hitComp = outHit.GetComponent();
-			// 만약 컴포넌트가 있다 그리고 컴포넌트의 물리가 켜져있다면
-			if (hitComp && hitComp->IsSimulatingPhysics())
-			{
-				// 그 컴포넌트에게 힘을 가하고싶다.
-				FVector dir = end - start;
-				hitComp->AddForce(dir.GetSafeNormal() * 500000 * hitComp->GetMass());
-			}
-
-			
-			// 만약 부딪힌 것이 AEnemy라면
-			// 적에게 데미지 1점을 주고싶다.
-			
-
-			//check( enemy );  //검증방법 = true면 통과, false면 에러
-
-		}	
-    }
+			StartReload();
+		}
+	}
+	else if (bCanFire && CurrentGreMagazin == 1)
+	{
+		// 탄창이 비어있으면 재장전을 시작합니다.
+		StartReload();
+	}
 }
+
+
+void AYSH_Player::StartReload()
+{
+	if (bCanFire && totalGreMagazin > 1)
+	{
+		// 리로딩 시작
+		BeginReload();
+	}
+}
+
+void AYSH_Player::ReloadComplete()
+{
+	// 탄창을 교체하고 재장전 UI를 숨깁니다.
+	CurrentGreMagazin = FMath::Min(totalGreMagazin, GreMagazin);
+	totalGreMagazin -= CurrentGreMagazin;
+	reloadUI->SetVisibility(ESlateVisibility::Hidden);
+
+	// 재장전이 완료되면 다시 총을 쏠 수 있도록 허용합니다.
+	bCanFire = true;
+}
+
+void AYSH_Player::BeginReload()
+{
+	// 리로딩 시작
+	bCanFire = false;
+	crossHairUI->WhiteAimInvisible();
+
+	// 리로딩 UI 표시 및 애니메이션 재생
+	reloadUI->SetVisibility(ESlateVisibility::Visible);
+	reloadUI->ReloadPlayAnimation();
+
+	// 딜레이 후 재장전 완료
+	FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AYSH_Player::ReloadComplete, ReloadTime, false);
+
+	// 탄창 재충전
+	CurrentGreMagazin = GreMagazin;
+	totalGreMagazin -= GreMagazin;
+}
+
 
 void AYSH_Player::OnActionChooseGrenadeGun()
 {
@@ -302,50 +325,4 @@ FORCEINLINE void AYSH_Player::OnActionZoomOut()
 	crossHairUI->SetVisibility(ESlateVisibility::Visible);
 	sniperUI->SetVisibility(ESlateVisibility::Hidden);
 	targetFOV = 90;
-}
-
-void AYSH_Player::setGreMagazin()
-{
-	if (CurrentGreMagazin > 0)
-	{
-		FTransform t = gunMeshComp->GetSocketTransform(TEXT("FirePosition"));
-		GetWorld()->SpawnActor<AYSH_BulletActor>(bulletFactory, t);
-		// 현재 총알이 존재한다면 -1 해라.
-		CurrentGreMagazin -= 1;
-	}
-	else
-	{
-		// 총알이 존재하지 않는데
-
-		// 총 탄약이 존재한다면
-		if (totalGreMagazin > 0)
-		{
-			// 여기서 리로딩 위젯이 나와야 할 것 같다.
-			reloadUI->SetVisibility(ESlateVisibility::Visible);
-			
-			reloadUI->ReloadPlayAnimation();
-
-			// 재장전 해라. 현재 탄창에 50발을 넣는다.
-			CurrentGreMagazin = GreMagazin;
-
-			// 총 탄약에서 50을 뺀 것을 저장한다.
-			totalGreMagazin -= GreMagazin;
-
-			// 딜레이 2초를 줘서 장전하는 시간과 위젯이 실행되는 시간을 가진다.
-			FTimerHandle TimerHandle;
-			GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AYSH_Player::ReloadComplete, 2.0f, false);
-		}
-		else
-		{
-			CurrentGreMagazin = 0;
-			totalGreMagazin = 0;
-		}
-	}
-}
-
-void AYSH_Player::ReloadComplete()
-{
-	// 재장전이 완료되었을 때 호출되는 함수
-	// 예를 들어, 여기서 reloadUI를 다시 숨길 수 있습니다.
-	reloadUI->SetVisibility(ESlateVisibility::Hidden);
 }

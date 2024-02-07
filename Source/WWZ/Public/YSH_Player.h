@@ -44,7 +44,6 @@ public:
 
 	void OnActionJump();
 
-
 	// 총 메시를 추가하고싶다.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	class USkeletalMeshComponent* gunMeshComp;
@@ -114,15 +113,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int totalGreMagazin = 100;
 
-	void setGreMagazin();
+	void StartReload();
 	void ReloadComplete();
-
-
+	void BeginReload();
 	//hp, magazine 관련 ui
 	UPROPERTY()
-	class UUserWidget* playerUI;
+	class UPlayerUserWidget* playerUI;
 
 	UPROPERTY( EditAnywhere )
 	TSubclassOf<class UUserWidget> playerFactory;
+
+	float ReloadTime = 2.0f;// 재장전에 소요되는 시간
+	bool bCanFire = true;    // 현재 총을 발사할 수 있는지 여부
+	float AimLoadTime = 0.2f;
 
 };

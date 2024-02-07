@@ -18,9 +18,4 @@ public:
 	UPROPERTY(BlueprintReadOnly, Transient, meta = (BindWidgetOptional))
 	class UImage* SniperAim;
 
-	UFUNCTION()
-	void SniperAimInvisible();
-
-	UFUNCTION()
-	void SniperAimVisible();
 };
