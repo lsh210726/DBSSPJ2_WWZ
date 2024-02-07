@@ -40,9 +40,7 @@ ALSH_BaseZom::ALSH_BaseZom()
 void ALSH_BaseZom::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	//GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &ALSH_BaseZom::ClimbZoneOverlap);
-	//GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic()
+	CharMov = GetCharacterMovement();
 
 }
 
@@ -51,7 +49,29 @@ void ALSH_BaseZom::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-
+	switch (fsm->mState)
+	{
+	case EEnemyState::Idle:
+		break;
+	case EEnemyState::Move:
+		CharMov->SetMovementMode(MOVE_Walking);
+		CharMov->bOrientRotationToMovement = true;
+		break;
+	case EEnemyState::Attack:
+		break;
+	case EEnemyState::Damage:
+		break;
+	case EEnemyState::Die:
+		break;
+	case EEnemyState::Climb:
+		CharMov->SetMovementMode(MOVE_Flying);
+		CharMov->bOrientRotationToMovement = false;
+		break;
+	case EEnemyState::Fall:
+		CharMov->SetMovementMode(MOVE_Falling);
+		CharMov->bOrientRotationToMovement = true;
+		break;
+	}
 }
 
 // Called to bind functionality to input
@@ -62,60 +82,11 @@ void ALSH_BaseZom::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 }
 
 
-
-bool ALSH_BaseZom::ClimbAction()
-{
-	auto CharMov = GetCharacterMovement();
-	////만약 현재 이동모드가 플라잉이 아니라면 기어오르기모드(플라잉)
-	//if(CharMov->MovementMode != EMovementMode::MOVE_Flying)
-	//{
-	//	FVector startPos = GetActorLocation()+FVector(0,0,100);
-	//	FVector endPos = startPos + GetActorForwardVector() * climbDistance;
-	//	DrawDebugLine(GetWorld(), startPos, endPos, FColor::Emerald, false, 1);
-	//	FHitResult hitInfo;
-	//	FCollisionQueryParams params;
-	//	params.AddIgnoredActor(this);
-	//	bool bHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECC_Visibility, params);
-	//	if (bHit)
-	//	{
-	//		//날기 상태로 바꾸기
-	//		CharMov->SetMovementMode(MOVE_Flying);
-	//		//회전 비활성화
-	//		CharMov->bOrientRotationToMovement = false;
-
-	//		auto f1 = hitInfo.Normal * GetCapsuleComponent()->GetScaledCapsuleRadius();
-	//		auto f2 = f1 + hitInfo.Location;
-	//		//GetCapsuleComponent()
-
-	//		//벽에 찰싹 달라붙게
-	//		auto r1 = UKismetMathLibrary::MakeRotFromX(hitInfo.Normal * -1.0f);
-	//		FLatentActionInfo Info;
-	//		Info.CallbackTarget = this;
-	//		UKismetSystemLibrary::MoveComponentTo(
-	//			GetCapsuleComponent(),
-	//			f2,
-	//			r1,
-	//			false,
-	//			false,
-	//			0.2f,
-	//			false,
-	//			EMoveComponentAction::Type::Move,
-	//			Info
-	//		);
-	//		doOnce = false;
-	//		return true;
-	//	}
-	//}
-	CharMov->SetMovementMode(MOVE_Flying);
-	CharMov->bOrientRotationToMovement = false;
-	return false;
-}
-
 void ALSH_BaseZom::ClimbMovement(FVector worldDir)
 {
 	FVector startPos = GetActorLocation() + FVector(0, 0, 100);
 	FVector endPos = startPos + GetActorForwardVector() * climbDistance;
-	DrawDebugLine(GetWorld(), startPos, endPos, FColor::Emerald, false, 1);
+	DrawDebugLine(GetWorld(), startPos, endPos, FColor::Purple, false, 1);
 	FHitResult hitInfo;
 	FCollisionQueryParams params;
 	params.AddIgnoredActor(this);
@@ -124,7 +95,7 @@ void ALSH_BaseZom::ClimbMovement(FVector worldDir)
 	{
 		AddMovementInput(worldDir, climbSpeed);
 		auto r1 = UKismetMathLibrary::MakeRotFromX(-hitInfo.Normal);
-		SetActorRotation(UKismetMathLibrary::RLerp(GetActorRotation(), r1, 0.2, false));
+		SetActorRotation(UKismetMathLibrary::RLerp(GetActorRotation(), FRotator(0,r1.Yaw,0), 0.2, false));
 		DrawDebugPoint(GetWorld(), hitInfo.ImpactPoint, 10, FColor(52, 220, 239), false, 1.0F);
 
 	}
@@ -146,6 +117,7 @@ void ALSH_BaseZom::LedgeMantleCalc(FVector startLoc)
 			FVector endPos = startPos - FVector(0, 0, 100);
 			DrawDebugLine(GetWorld(), startPos, endPos, FColor::Red, false, 1);
 			bool bHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECC_Visibility, params);
+			//만약 더이상 올라갈곳이 없고 모서리라면
 			if (bHit)
 			{
 				//SetActorEnableCollision(false);
@@ -162,32 +134,48 @@ void ALSH_BaseZom::LedgeMantleCalc(FVector startLoc)
 					GetActorRotation(),
 					false,
 					false,
-					5.0f,
+					5.0f ,
 					false,
 					EMoveComponentAction::Type::Move,
 					Info
 				);
-				//fsm->ClimbUpEvent();
+				//break;
 				doOnce = true;
-				break;
+				return;
 			}
 		}
+		FallingAction();
 	}
 }
 
-void ALSH_BaseZom::StopClimb()
-{
-	auto CharMov = GetCharacterMovement();
-
-	//날기 상태로 바꾸기
-	CharMov->SetMovementMode(MOVE_Walking);
-	//회전 비활성화
-	CharMov->bOrientRotationToMovement = true;
-	SetActorRotation(FRotator(0, GetActorRotation().Yaw, 0));
-}
 
 void ALSH_BaseZom::ClimbUpCompleted()
 {
-	StopClimb();
+	UE_LOG(LogTemp, Log, TEXT("끝까지 올라감"));
+
+	//auto CharMov = GetCharacterMovement();
+
+	//날기 상태로 바꾸기
+	//CharMov->SetMovementMode(MOVE_Walking);
+	//회전 비활성화
+	CharMov->bOrientRotationToMovement = true;
+	SetActorRotation(FRotator(0, GetActorRotation().Yaw, 0));
+
+	//적을 쫒음
 	fsm->ClimbUpEvent();
+}
+
+
+void ALSH_BaseZom::FallingAction()
+{
+	//떨어져야 한다
+	//auto CharMov = GetCharacterMovement();
+	UE_LOG(LogTemp, Log, TEXT("올라갈곳이 없음"));
+
+	//떨어지기 상태로 바꾸기
+	//CharMov->SetMovementMode(MOVE_Falling);
+	//회전 비활성화
+	CharMov->bOrientRotationToMovement = true;
+	SetActorRotation(FRotator(0, GetActorRotation().Yaw, 0));
+	fsm->FallingEvent();
 }

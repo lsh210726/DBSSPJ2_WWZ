@@ -16,6 +16,7 @@ enum class EEnemyState :uint8
 	Damage,
 	Die,
 	Climb,
+	Fall,
 };
 
 
@@ -45,6 +46,7 @@ public:
 	void DamageState();
 	void DieState();
 	void ClimbState();
+	void FallState();
 
 	UPROPERTY(EditDefaultsOnly, Category = "FSM")
 	float idleDelayTime = 2;
@@ -83,22 +85,13 @@ public:
 	UPROPERTY()
 	class AAIController* ai;
 
-	UFUNCTION()
-	void ClimbZoneOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	UFUNCTION()
-	void ClimbZoneEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-
 	//UPROPERTY()
 	//class ALSH_ClimbZone* climbZone;
 
 	UFUNCTION()
 	void ClimbUpEvent();
 
-
-	UFUNCTION()
-	void itHasPath();
-
+	UPROPERTY(BlueprintReadOnly)
 	bool climbMode=true;
 
 	UFUNCTION()
@@ -108,4 +101,8 @@ public:
 	void OnMoveCompleted();
 
 	bool isMoving = false;
+
+
+	UFUNCTION()
+	void FallingEvent();
 };
