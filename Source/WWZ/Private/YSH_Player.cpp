@@ -134,8 +134,8 @@ void AYSH_Player::BeginPlay()
 	CurrentGreMagazin = 10;
 	totalGreMagazin = 100;
 
-	SnaMagazin = 2;
-	CurrentSnaMagazin = 2;
+	SnaMagazin = 5;
+	CurrentSnaMagazin = 5;
 	totalSnaMagazin = 20;
 
 }
@@ -270,8 +270,7 @@ void AYSH_Player::OnActionFire()
 				}
 				//�ε��� ���� expVFX�� �����ؼ� ��ġ�ϰ� �ʹ�.
 				//outHit.ImpactPoint
-
-				//zombie damage
+							//zombie damage
 				auto enemy = outHit.GetActor()->GetDefaultSubobjectByName(TEXT("FSM"));
 				if (enemy)
 				{
