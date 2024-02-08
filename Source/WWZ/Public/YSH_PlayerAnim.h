@@ -14,4 +14,24 @@ class WWZ_API UYSH_PlayerAnim : public UAnimInstance
 {
 	GENERATED_BODY()
 	
+
+public:
+
+virtual void NativeUpdateAnimation( float DeltaSeconds ) override;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool isFalling;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float speed;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float direction;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float pitch;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UAnimMontage* playerFireMontage;
+
+	void PlayerAttackAnim();
+
 };

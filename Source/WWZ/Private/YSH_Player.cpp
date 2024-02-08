@@ -17,6 +17,8 @@
 #include "AimUserWidget.h"
 #include "SniperUserWidget.h"
 #include "PlayerUserWidget.h"
+#include "YSH_PlayerAnim.h"
+
 
 
 
@@ -213,6 +215,8 @@ void AYSH_Player::OnActionJump()
 void AYSH_Player::OnActionFire()
 {
 	crossHairUI->WhiteAimVisible();
+	auto anim = Cast<UYSH_PlayerAnim>(GetMesh()->GetAnimInstance());
+	anim->PlayerAttackAnim();
 
 	if (false == bChooseSniperGun) {
 
@@ -225,12 +229,18 @@ void AYSH_Player::OnActionFire()
 			// 총알을 발사한 후에 탄창이 비어있으면 재장전을 시작합니다.
 			if (CurrentGreMagazin == 0)
 			{
-				StartReloadGre();
+				if (totalGreMagazin > 0)
+				{
+					StartReloadGre();
+				}
 			}
 		}
 		else if (CurrentGreMagazin == 0) 
 		{
-			StartReloadGre();
+			if (totalGreMagazin > 0)
+			{
+				StartReloadGre();
+			}
 		}
 	}
 	else
@@ -266,12 +276,18 @@ void AYSH_Player::OnActionFire()
 			// 총알을 발사한 후에 탄창이 비어있으면 재장전을 시작합니다.
 			if (CurrentSnaMagazin == 0)
 			{
-				StartReloadSna();
+				if (totalSnaMagazin > 0)
+				{
+					StartReloadSna();
+				}
 			}
 			
 		}else if (CurrentSnaMagazin == 0)
 		{
-			StartReloadSna();
+			if (totalSnaMagazin > 0) 
+			{
+				StartReloadSna();
+			}
 		}
 	}
 }
