@@ -53,7 +53,7 @@ public:
 	float currentTime = 0;
 
 	UPROPERTY(VisibleAnywhere, Category = "FSM")
-	class AWWZCharacter* target;
+	class AYSH_Player* target;
 	UPROPERTY(VisibleAnywhere, Category = "FSM")
 	class ALSH_ClimbZone* climbZone;
 
@@ -105,4 +105,7 @@ public:
 
 	UFUNCTION()
 	void FallingEvent();
+
+	UPROPERTY(EditAnywhere)
+	float climbdist = 800;
 };

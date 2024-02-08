@@ -4,8 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "../../../../../../../Source/Runtime/Engine/Classes/Components/SkeletalMeshComponent.h"
-#include "../../../../../../../Source/Runtime/UMG/Public/Blueprint/UserWidget.h"
 #include "YSH_Player.generated.h"
 
 UCLASS()
@@ -46,7 +44,6 @@ public:
 
 	void OnActionJump();
 
-
 	// 총 메시를 추가하고싶다.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	class USkeletalMeshComponent* gunMeshComp;
@@ -66,6 +63,14 @@ public:
 
 	void OnActionFire();
 
+	void StartReloadGre();
+	void ReloadCompleteGre();
+	void BeginReloadGre();
+
+	void StartReloadSna();
+	void ReloadCompleteSna();
+	void BeginReloadSna();
+
 	void OnActionChooseGrenadeGun();
 	void OnActionChooseSniperGun();
 	void OnActionChooseChainsaw();
@@ -78,10 +83,10 @@ public:
 	TSubclassOf<class UUserWidget> sniperFactory;
 
 	UPROPERTY()
-	class UUserWidget* crossHairUI;
+	class UAimUserWidget* crossHairUI;
 
 	UPROPERTY()
-	class UUserWidget* sniperUI;
+	class USniperUserWidget* sniperUI;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float targetFOV=90;
@@ -92,6 +97,49 @@ public:
 	FORCEINLINE void OnActionZoomOut();
 
 	/// <summary> true면 SniperGun, false면 GrenadeGun </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bChooseSniperGun = false; //true면 SniperGun, false면 GrenadeGun
 
+	//십자가 키고, 끄기
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bCrossOn = false;
+
+	//리로딩 UI 업로드
+
+	UPROPERTY()
+	class UReloadUserWidget* reloadUI;
+
+	UPROPERTY( EditAnywhere )
+	TSubclassOf<class UUserWidget> reloadFactory;
+
+	//grenadeMagazin
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int CurrentGreMagazin = 50;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int GreMagazin = 50;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int totalGreMagazin = 100;
+
+
+	//hp, magazine 관련 ui
+	UPROPERTY()
+	class UPlayerUserWidget* playerUI;
+
+	UPROPERTY( EditAnywhere )
+	TSubclassOf<class UUserWidget> playerFactory;
+
+	float ReloadTime = 2.0f;// 재장전에 소요되는 시간
+	bool bCanFire = true;    // 현재 총을 발사할 수 있는지 여부
+	float AimLoadTime = 0.2f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int CurrentSnaMagazin = 2;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int SnaMagazin = 2;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int totalSnaMagazin = 10;
 };

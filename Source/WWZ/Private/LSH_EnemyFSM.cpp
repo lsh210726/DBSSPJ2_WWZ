@@ -13,6 +13,7 @@
 #include "NavigationSystem.h"
 #include "NavFilters/NavigationQueryFilter.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "YSH_Player.h"
 
 
 
@@ -35,8 +36,8 @@ void ULSH_EnemyFSM::BeginPlay()
 	Super::BeginPlay();
 
 	//월드에서 플레이어 타깃 찾기
-	auto actor = UGameplayStatics::GetActorOfClass(GetWorld(), AWWZCharacter::StaticClass());
-	target = Cast<AWWZCharacter>(actor);
+	auto actor = UGameplayStatics::GetActorOfClass(GetWorld(), AYSH_Player::StaticClass());
+	target = Cast<AYSH_Player>(actor);
 
 	//클라임 존 찾기
 	climbZone = Cast<ALSH_ClimbZone>(UGameplayStatics::GetActorOfClass(GetWorld(), ALSH_ClimbZone::StaticClass()));
@@ -113,6 +114,7 @@ void ULSH_EnemyFSM::MoveState()
 	ai->MoveToLocation(destination);
 
 	DrawDebugPoint(GetWorld(), destination, 20, FColor::Purple, false, GetWorld()->GetDeltaSeconds());
+	DrawDebugLine(GetWorld(), me->GetActorLocation(), destination, FColor::White, false, GetWorld()->GetDeltaSeconds());
 
 	//오르기 모드가 아니고 공격 가능 거리에 플레이어가 있다면
 	if (!climbMode && dir.Size() < attackRange)
@@ -131,7 +133,7 @@ void ULSH_EnemyFSM::MoveState()
 
 		UE_LOG(LogTemp, Log, TEXT("%f"),FVector::Distance(destination, me->GetActorLocation()));
 	//만약 오르기 모드고 목적지와 거리가 100 이하고 속도가 100 아래라면
-	if (climbMode && FVector::Distance(destination, me->GetActorLocation())<400 && me->GetVelocity().Size() < 100)
+	if (climbMode && FVector::Distance(destination, me->GetActorLocation())<climbdist && me->GetVelocity().Size() < 100)
 	{
 
 			//오르기 상태로 전환

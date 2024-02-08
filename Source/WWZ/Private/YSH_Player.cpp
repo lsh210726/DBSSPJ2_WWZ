@@ -2,14 +2,25 @@
 
 
 #include "YSH_Player.h"
-#include "../../../../../../../Source/Runtime/Engine/Classes/GameFramework/SpringArmComponent.h"
-#include "../../../../../../../Source/Runtime/Engine/Classes/Camera/CameraComponent.h"
-#include "../../../../../../../Source/Runtime/Engine/Classes/Engine/SkeletalMesh.h"
-#include "../../../../../../../Source/Runtime/Engine/Classes/GameFramework/Character.h"
-#include "../../../../../../../Source/Runtime/Engine/Classes/Components/SkeletalMeshComponent.h"
-#include "../../../../../../../Source/Runtime/Engine/Classes/Components/InputComponent.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "Camera/CameraComponent.h"
+#include "Engine/SkeletalMesh.h"
+#include "GameFramework/Character.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/InputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "YSH_BulletActor.h"
+#include "Engine/World.h"
+#include "Blueprint/UserWidget.h"
+#include "Animation/WidgetAnimation.h"
+#include "ReloadUserWidget.h"
+#include "AimUserWidget.h"
+#include "SniperUserWidget.h"
+#include "PlayerUserWidget.h"
+#include "YSH_PlayerAnim.h"
+#include "LSH_EnemyFSM.h"
+
+
 
 
 // Sets default values
@@ -18,32 +29,32 @@ AYSH_Player::AYSH_Player()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	// springArmComp¸¦ »ý¼ºÇØ¼­ Root¿¡ ºÙÀÌ°í½Í´Ù.
+	// springArmCompï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¼ï¿½ Rootï¿½ï¿½ ï¿½ï¿½ï¿½Ì°ï¿½Í´ï¿½.
 	springArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("springArmComp"));
 	springArmComp->SetupAttachment(RootComponent);
 	// Loc : (X=0.000000,Y=70.000000,Z=90.000000)
 	springArmComp->SetWorldLocation(FVector(0, 70, 90));
-	// cameraComp¸¦ »ý¼ºÇØ¼­ springArmComp¿¡ ºÙÀÌ°í½Í´Ù.
+	// cameraCompï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¼ï¿½ springArmCompï¿½ï¿½ ï¿½ï¿½ï¿½Ì°ï¿½Í´ï¿½.
 	cameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("cameraComp"));
 	cameraComp->SetupAttachment(springArmComp);
 
-	// mesh¸¦ ·ÎµåÇØ¼­ Àû¿ëÇÏ°í½Í´Ù.
+	// meshï¿½ï¿½ ï¿½Îµï¿½ï¿½Ø¼ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½Í´ï¿½.
 	ConstructorHelpers::FObjectFinder<USkeletalMesh> tempMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/Mannequins/Meshes/SKM_Quinn.SKM_Quinn'"));
-	// ¼º°øÇß´Ù¸é
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ß´Ù¸ï¿½
 	if (tempMesh.Succeeded())
 	{
-		// Mesh¿¡ Àû¿ëÇÏ°í½Í´Ù.
+		// Meshï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½Í´ï¿½.
 		GetMesh()->SetSkeletalMesh(tempMesh.Object);
 		GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -90), FRotator(0, -90, 0));
 	}
 
 	bUseControllerRotationYaw = true;
-	// Use Pawn Control RotationÀ» True·Î ÇÏ°í½Í´Ù.
+	// Use Pawn Control Rotationï¿½ï¿½ Trueï¿½ï¿½ ï¿½Ï°ï¿½Í´ï¿½.
 	springArmComp->bUsePawnControlRotation = true;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 
 
-	// gunMeshComp¸¦ »ý¼ºÇØ¼­ ·ÎµùµµÇÏ°í ¹èÄ¡ÇÏ°í½Í´Ù. Mesh¿¡ ºÙÀÌ°í½Í´Ù.
+	// gunMeshCompï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¼ï¿½ ï¿½Îµï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½Ä¡ï¿½Ï°ï¿½Í´ï¿½. Meshï¿½ï¿½ ï¿½ï¿½ï¿½Ì°ï¿½Í´ï¿½.
 	gunMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("gunMeshComp"));
 	gunMeshComp->SetupAttachment(GetMesh());
 
@@ -55,10 +66,10 @@ AYSH_Player::AYSH_Player()
 		gunMeshComp->SetRelativeLocation(FVector(0, 50, 130));
 	}
 
-	// sniperMeshComp(UStaticMeshComponent)¸¦ »ý¼ºÇØ¼­ ¸Þ½¬¿¡ ºÙÀÌ°í½Í´Ù.
+	// sniperMeshComp(UStaticMeshComponent)ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¼ï¿½ ï¿½Þ½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì°ï¿½Í´ï¿½.
 	sniperMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("sniperMeshComp"));
 	sniperMeshComp->SetupAttachment(GetMesh());
-	// UStaticMesh¸¦ ·ÎµåÇØ¼­ Àû¿ëÇÏ°í½Í´Ù.
+	// UStaticMeshï¿½ï¿½ ï¿½Îµï¿½ï¿½Ø¼ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½Í´ï¿½.
 	ConstructorHelpers::FObjectFinder<UStaticMesh> tempSniper(TEXT("/Script/Engine.StaticMesh'/Game/YSH/Models/SniperGun/sniper1.sniper1'"));
 
 	if (tempSniper.Succeeded())
@@ -68,7 +79,7 @@ AYSH_Player::AYSH_Player()
 		sniperMeshComp->SetWorldScale3D(FVector(0.15f));
 	}
 
-	// ChainsawMeshComp¸¦ »ý¼ºÇØ¼­ ·ÎµùµµÇÏ°í ¹èÄ¡ÇÏ°í½Í´Ù. Mesh¿¡ ºÙÀÌ°í½Í´Ù.
+	// ChainsawMeshCompï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¼ï¿½ ï¿½Îµï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½Ä¡ï¿½Ï°ï¿½Í´ï¿½. Meshï¿½ï¿½ ï¿½ï¿½ï¿½Ì°ï¿½Í´ï¿½.
 	ChainsawMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ChainsawMeshComp"));
 	ChainsawMeshComp->SetupAttachment(GetMesh());
 
@@ -92,18 +103,40 @@ void AYSH_Player::BeginPlay()
 {
 	Super::BeginPlay();
 
-	crossHairUI = CreateWidget(GetWorld(), crossHairFactory);
+	auto crossHairWidget = CreateWidget(GetWorld(), crossHairFactory);
+	crossHairUI = Cast<UAimUserWidget>(crossHairWidget);
 	crossHairUI->AddToViewport();
+	crossHairUI->WhiteAimInvisible();
 
-	sniperUI = CreateWidget(GetWorld(), sniperFactory);
+	auto sniperWidget = CreateWidget(GetWorld(), sniperFactory);
+	sniperUI = Cast<USniperUserWidget>(sniperWidget);
 	sniperUI->AddToViewport();
 
-	// ÅÂ¾î³¯ ¶§ ±âº»Á¶ÁØ(CrossHair UI)¸¸ º¸ÀÌ°ÔÇÏ°í½Í´Ù
-	sniperUI->SetVisibility(ESlateVisibility::Hidden);
+	auto reloadWidget = CreateWidget(GetWorld(), reloadFactory);
+	reloadUI = Cast<UReloadUserWidget>(reloadWidget);
+	reloadUI->AddToViewport();
 
-	// ÃÑÀ» ±³Ã¼ÇÏ¸é ZoomOutÀ» ÇÏ°í½Í´Ù.
+	auto playerWidget = CreateWidget(GetWorld(), playerFactory);
+	playerUI = Cast<UPlayerUserWidget>(playerWidget);
+	playerUI->AddToViewport();
+
+	// ï¿½Â¾î³¯ ï¿½ï¿½ ï¿½âº»ï¿½ï¿½ï¿½ï¿½(CrossHair UI)ï¿½ï¿½ ï¿½ï¿½ï¿½Ì°ï¿½ï¿½Ï°ï¿½Í´ï¿½
+	sniperUI->SetVisibility(ESlateVisibility::Hidden);
+	reloadUI->SetVisibility(ESlateVisibility::Hidden);
+	
+
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼ï¿½Ï¸ï¿½ ZoomOutï¿½ï¿½ ï¿½Ï°ï¿½Í´ï¿½.
 
 	OnActionChooseGrenadeGun();
+
+	//Åºï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+	GreMagazin = 10;
+	CurrentGreMagazin = 10;
+	totalGreMagazin = 100;
+
+	SnaMagazin = 2;
+	CurrentSnaMagazin = 2;
+	totalSnaMagazin = 20;
 
 }
 
@@ -123,9 +156,9 @@ void AYSH_Player::SetupPlayerInputComponent(class UInputComponent* PlayerInputCo
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	// °¡·ÎÃà, ¼¼·ÎÃà, Á¡ÇÁ¿¡´ëÇÑ ÇÔ¼ö¸¦ ¹ÙÀÎµù ÇÏ°í½Í´Ù.
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Îµï¿½ ï¿½Ï°ï¿½Í´ï¿½.
 
-	// ÁÖ¾î->±â´É(ÇÊ¿äÇÑ °ª)
+	// ï¿½Ö¾ï¿½->ï¿½ï¿½ï¿½(ï¿½Ê¿ï¿½ï¿½ï¿½ ï¿½ï¿½)
 	PlayerInputComponent->BindAxis(TEXT("Move Forward / Backward"), this, &AYSH_Player::OnAxisVertical);
 
 	PlayerInputComponent->BindAxis(TEXT("Move Right / Left"), this, &AYSH_Player::OnAxisHorizontal);
@@ -182,64 +215,188 @@ void AYSH_Player::OnActionJump()
 
 void AYSH_Player::OnActionFire()
 {
+	crossHairUI->WhiteAimVisible();
+	auto anim = Cast<UYSH_PlayerAnim>(GetMesh()->GetAnimInstance());
+	anim->PlayerAttackAnim();
 
-	// ¸¸¾à ½º³ªÀÌÆÛ°¡ ¾Æ´Ï¶ó¸é
-	if (false == bChooseSniperGun)
-	{
-		FTransform t = gunMeshComp->GetSocketTransform(TEXT("FirePosition"));
-		GetWorld()->SpawnActor<AYSH_BulletActor>(bulletFactory, t);
+	if (false == bChooseSniperGun) {
+
+		if (bCanFire && CurrentGreMagazin > 0)
+		{
+			FTransform t = gunMeshComp->GetSocketTransform(TEXT("FirePosition"));
+			GetWorld()->SpawnActor<AYSH_BulletActor>(bulletFactory, t);
+			CurrentGreMagazin -= 1;
+			crossHairUI->WhiteAimInvisible();
+			// ï¿½Ñ¾ï¿½ï¿½ï¿½ ï¿½ß»ï¿½ï¿½ï¿½ ï¿½Ä¿ï¿½ ÅºÃ¢ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
+			if (CurrentGreMagazin == 0)
+			{
+				if (totalGreMagazin > 0)
+				{
+					StartReloadGre();
+				}
+			}
+		}
+		else if (CurrentGreMagazin == 0) 
+		{
+			if (totalGreMagazin > 0)
+			{
+				StartReloadGre();
+			}
+		}
 	}
-	// ±×·¸Áö ¾Ê´Ù¸é LineTrace 
 	else
 	{
-		FHitResult outHit;
-		FVector start = cameraComp->GetComponentLocation();
-		FVector end = start + cameraComp->GetForwardVector() * 100000;
-		FCollisionQueryParams params;
-		params.AddIgnoredActor(this);
-
-		bool bReturnValue = GetWorld()->LineTraceSingleByChannel(outHit, start, end, ECollisionChannel::ECC_Visibility, params);
-
-		// ¸¸¾à ºÎµúÈù °ÍÀÌ ÀÖ´Ù¸é
-		if (bReturnValue)
+		if (bCanFire && CurrentSnaMagazin > 0)
 		{
-			DrawDebugLine(GetWorld(), outHit.TraceStart, outHit.ImpactPoint, FColor::Red, false, 10);
-			// ºÎµúÈù ÄÄÆ÷³ÍÆ®¸¦ °¡Á®¿Í¼­
-			UPrimitiveComponent* hitComp = outHit.GetComponent();
-			// ¸¸¾à ÄÄÆ÷³ÍÆ®°¡ ÀÖ´Ù ±×¸®°í ÄÄÆ÷³ÍÆ®ÀÇ ¹°¸®°¡ ÄÑÁ®ÀÖ´Ù¸é
-			if (hitComp && hitComp->IsSimulatingPhysics())
+			FHitResult outHit;
+			FVector start = cameraComp->GetComponentLocation();
+			FVector end = start + cameraComp->GetForwardVector() * 100000;
+			FCollisionQueryParams params;
+			params.AddIgnoredActor(this);
+
+			bool bReturnValue = GetWorld()->LineTraceSingleByChannel(outHit, start, end, ECollisionChannel::ECC_Visibility, params);
+			if (bReturnValue)
 			{
-				// ±× ÄÄÆ÷³ÍÆ®¿¡°Ô ÈûÀ» °¡ÇÏ°í½Í´Ù.
-				FVector dir = end - start;
-				hitComp->AddForce(dir.GetSafeNormal() * 500000 * hitComp->GetMass());
+				DrawDebugLine(GetWorld(), outHit.TraceStart, outHit.ImpactPoint, FColor::Red, false, 5);
+				//ï¿½Îµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¼ï¿½
+				UPrimitiveComponent* hitComp = outHit.GetComponent();
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½Ö´ï¿½, ï¿½×¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ö´Ù¸ï¿½
+				if (hitComp && hitComp->IsSimulatingPhysics())
+				{
+					//ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½(impact normalï¿½ï¿½ ï¿½Ý´ï¿½ï¿½ï¿½ï¿½)ï¿½ï¿½ ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½Í´ï¿½.
+					FVector dir = end - start;
+					hitComp->AddForce(dir.GetSafeNormal() * 500000 * hitComp->GetMass());
+
+				}
+				//ï¿½Îµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ expVFXï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¼ï¿½ ï¿½ï¿½Ä¡ï¿½Ï°ï¿½ ï¿½Í´ï¿½.
+				//outHit.ImpactPoint
+
+				//zombie damage
+				auto enemy = outHit.GetActor()->GetDefaultSubobjectByName(TEXT("FSM"));
+				if (enemy)
+				{
+					UE_LOG(LogTemp, Log, TEXT("hit"));
+					auto enemyFSM = Cast<ULSH_EnemyFSM>(enemy);
+					enemyFSM->OnDamageProcess();
+				}
 			}
 
+			CurrentSnaMagazin -= 1;
+			crossHairUI->WhiteAimInvisible();
+			// ï¿½Ñ¾ï¿½ï¿½ï¿½ ï¿½ß»ï¿½ï¿½ï¿½ ï¿½Ä¿ï¿½ ÅºÃ¢ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
+			if (CurrentSnaMagazin == 0)
+			{
+				if (totalSnaMagazin > 0)
+				{
+					StartReloadSna();
+				}
+			}
 			
-			// ¸¸¾à ºÎµúÈù °ÍÀÌ AEnemy¶ó¸é
-			// Àû¿¡°Ô µ¥¹ÌÁö 1Á¡À» ÁÖ°í½Í´Ù.
-			
-
-			//check( enemy );  //°ËÁõ¹æ¹ý = true¸é Åë°ú, false¸é ¿¡·¯
-
-		}	
-    }
+		}else if (CurrentSnaMagazin == 0)
+		{
+			if (totalSnaMagazin > 0) 
+			{
+				StartReloadSna();
+			}
+		}
+	}
 }
+
+
+void AYSH_Player::StartReloadGre()
+{
+	if (bCanFire && CurrentGreMagazin == 0)
+	{
+		// ï¿½ï¿½ï¿½Îµï¿½ ï¿½ï¿½ï¿½ï¿½
+		BeginReloadGre();
+	}
+}
+
+void AYSH_Player::ReloadCompleteGre()
+{
+	// ÅºÃ¢ï¿½ï¿½ ï¿½ï¿½Ã¼ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ UIï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.
+	CurrentGreMagazin = FMath::Min(totalGreMagazin, GreMagazin);
+	totalGreMagazin -= CurrentGreMagazin;
+	reloadUI->SetVisibility(ESlateVisibility::Hidden);
+
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ï·ï¿½Ç¸ï¿½ ï¿½Ù½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½Öµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
+	bCanFire = true;
+}
+
+void AYSH_Player::BeginReloadGre()
+{
+	// ï¿½ï¿½ï¿½Îµï¿½ ï¿½ï¿½ï¿½ï¿½
+	bCanFire = false;
+	crossHairUI->WhiteAimInvisible();
+
+	// ï¿½ï¿½ï¿½Îµï¿½ UI Ç¥ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½ ï¿½ï¿½ï¿½
+	reloadUI->SetVisibility(ESlateVisibility::Visible);
+	reloadUI->ReloadPlayAnimation();
+
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ï·ï¿½
+	FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AYSH_Player::ReloadCompleteGre, ReloadTime, false);
+
+	// ÅºÃ¢ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	CurrentGreMagazin = GreMagazin;
+	totalGreMagazin -= GreMagazin;
+}
+
+void AYSH_Player::StartReloadSna()
+{
+	if (bCanFire && CurrentSnaMagazin == 0 )
+	{
+		// ï¿½ï¿½ï¿½Îµï¿½ ï¿½ï¿½ï¿½ï¿½
+		BeginReloadSna();
+	}
+}
+
+void AYSH_Player::ReloadCompleteSna()
+{
+	// ÅºÃ¢ï¿½ï¿½ ï¿½ï¿½Ã¼ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ UIï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.
+	CurrentSnaMagazin = FMath::Min(totalSnaMagazin, SnaMagazin);
+	totalSnaMagazin -= CurrentSnaMagazin;
+	reloadUI->SetVisibility(ESlateVisibility::Hidden);
+
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ï·ï¿½Ç¸ï¿½ ï¿½Ù½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½Öµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
+	bCanFire = true;
+}
+
+void AYSH_Player::BeginReloadSna()
+{
+	// ï¿½ï¿½ï¿½Îµï¿½ ï¿½ï¿½ï¿½ï¿½
+	bCanFire = false;
+	crossHairUI->WhiteAimInvisible();
+
+	// ï¿½ï¿½ï¿½Îµï¿½ UI Ç¥ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½ ï¿½ï¿½ï¿½
+	reloadUI->SetVisibility(ESlateVisibility::Visible);
+	reloadUI->ReloadPlayAnimation();
+
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ï·ï¿½
+	FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AYSH_Player::ReloadCompleteSna, ReloadTime, false);
+
+	// ÅºÃ¢ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	CurrentSnaMagazin = SnaMagazin;
+	totalSnaMagazin -= SnaMagazin;
+}
+
 
 void AYSH_Player::OnActionChooseGrenadeGun()
 {
 	bChooseSniperGun = false;
-	// À¯ÅºÃÑÀ» º¸ÀÌ°Ô, ½º³ªÀÌÆÛ¸¦ ¾Èº¸ÀÌ°Ô
+	// ï¿½ï¿½Åºï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì°ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Û¸ï¿½ ï¿½Èºï¿½ï¿½Ì°ï¿½
 	gunMeshComp->SetVisibility(true);
 	sniperMeshComp->SetVisibility(false);
 	ChainsawMeshComp->SetVisibility(false);
-	//ÃÑÀ» ±³Ã¼ÇÏ¸é ZoomOutÀ» ÇÏ°í½Í´Ù.
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼ï¿½Ï¸ï¿½ ZoomOutï¿½ï¿½ ï¿½Ï°ï¿½Í´ï¿½.
 	OnActionZoomOut();
 }
 
 void AYSH_Player::OnActionChooseSniperGun()
 {
 	bChooseSniperGun = true;
-	// À¯ÅºÃÑÀ» ¾Èº¸ÀÌ°Ô, ½º³ªÀÌÆÛ¸¦ º¸ÀÌ°Ô
+	// ï¿½ï¿½Åºï¿½ï¿½ï¿½ï¿½ ï¿½Èºï¿½ï¿½Ì°ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Û¸ï¿½ ï¿½ï¿½ï¿½Ì°ï¿½
 	gunMeshComp->SetVisibility(false);
 	sniperMeshComp->SetVisibility(true);
 	ChainsawMeshComp->SetVisibility(false);
@@ -255,19 +412,19 @@ void AYSH_Player::OnActionChooseChainsaw()
 
 void AYSH_Player::Zoom()
 {
-	//¼±Çüº¸°£À» ÀÌ¿ëÇØ¼­ ÇöÀç FOV¸¦ targetFOV°ª¿¡ ±ÙÁ¢ÇÏ°Ô ÇÏ°í½Í´Ù.
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¿ï¿½ï¿½Ø¼ï¿½ ï¿½ï¿½ï¿½ï¿½ FOVï¿½ï¿½ targetFOVï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½Ï°ï¿½Í´ï¿½.
 	cameraComp->FieldOfView = FMath::Lerp<float>(cameraComp->FieldOfView, targetFOV, GetWorld()->GetDeltaSeconds() * 10);
 }
 
 FORCEINLINE void AYSH_Player::OnActionZoomIn()
 {
-	//¸¸¾à ¼Õ¿¡ Áå ÃÑÀÌ ½º³ªÀÌÆÛ°¡ ¾Æ´Ï¶ó¸é ÇÔ¼ö¸¦ ¹Ù·Î Á¾·áÇÏ°í½Í´Ù.
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½Õ¿ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Û°ï¿½ ï¿½Æ´Ï¶ï¿½ï¿½ ï¿½Ô¼ï¿½ï¿½ï¿½ ï¿½Ù·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½Í´ï¿½.
 	if (false == bChooseSniperGun)
 	{
 		return;
-	}//returnÀ» ¸¸³ª¸é ¹Ù·Î ÇÔ¼ö¸¦ Á¾·áÇÔ (¾î?³Ê ¾Æ´Ï³×? ³¡)
+	}//returnï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ù·ï¿½ ï¿½Ô¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½?ï¿½ï¿½ ï¿½Æ´Ï³ï¿½? ï¿½ï¿½)
 
-	// ZoomInÀ» ÇÏ¸é SniperUI¸¦ º¸ÀÌ°Ô ÇÏ°í½Í´Ù.(CrossHairUI ¾Èº¸ÀÌ°Ô)
+	// ZoomInï¿½ï¿½ ï¿½Ï¸ï¿½ SniperUIï¿½ï¿½ ï¿½ï¿½ï¿½Ì°ï¿½ ï¿½Ï°ï¿½Í´ï¿½.(CrossHairUI ï¿½Èºï¿½ï¿½Ì°ï¿½)
 	crossHairUI->SetVisibility(ESlateVisibility::Hidden);
 	sniperUI->SetVisibility(ESlateVisibility::Visible);
 	targetFOV = 30;
@@ -275,7 +432,7 @@ FORCEINLINE void AYSH_Player::OnActionZoomIn()
 
 FORCEINLINE void AYSH_Player::OnActionZoomOut()
 {
-	// ZoomOutÀ» ÇÏ¸é CossHair¸¦ º¸ÀÌ°Ô ÇÏ°í½Í´Ù.(SniperUI ¾Èº¸ÀÌ°Ô)
+	// ZoomOutï¿½ï¿½ ï¿½Ï¸ï¿½ CossHairï¿½ï¿½ ï¿½ï¿½ï¿½Ì°ï¿½ ï¿½Ï°ï¿½Í´ï¿½.(SniperUI ï¿½Èºï¿½ï¿½Ì°ï¿½)
 	crossHairUI->SetVisibility(ESlateVisibility::Visible);
 	sniperUI->SetVisibility(ESlateVisibility::Hidden);
 	targetFOV = 90;
