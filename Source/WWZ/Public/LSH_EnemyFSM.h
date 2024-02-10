@@ -85,26 +85,11 @@ public:
 	UPROPERTY()
 	class AAIController* ai;
 
-	//UPROPERTY()
-	//class ALSH_ClimbZone* climbZone;
-
 	UFUNCTION()
 	void ClimbUpEvent();
 
 	UPROPERTY(BlueprintReadOnly)
 	bool climbMode=true;
-
-	UFUNCTION()
-	void FindClimbPoint();
-
-	UFUNCTION()
-	void OnMoveCompleted();
-
-	bool isMoving = false;
-
-
-	UFUNCTION()
-	void FallingEvent();
 
 	UPROPERTY(EditAnywhere)
 	float climbdist = 800;

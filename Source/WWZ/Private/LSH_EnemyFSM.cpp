@@ -106,8 +106,7 @@ void ULSH_EnemyFSM::IdleState()
 void ULSH_EnemyFSM::MoveState() 
 {
 	FVector destination =  climbMode ? climbZone->GetActorLocation() : target->GetActorLocation();
-	//FVector destination =  (target->GetActorLocation().Z-me->GetActorLocation().Z>10) ? climbZone->GetActorLocation() : target->GetActorLocation();
-	//FVector destination = targetLoc;
+
 	FVector dir = destination - me->GetActorLocation();
 	//이동
 	//me->AddMovementInput(dir.GetSafeNormal());
@@ -131,21 +130,18 @@ void ULSH_EnemyFSM::MoveState()
 
 	auto speed = me->GetVelocity().Size();
 
-		UE_LOG(LogTemp, Log, TEXT("%f"),FVector::Distance(destination, me->GetActorLocation()));
 	//만약 오르기 모드고 목적지와 거리가 100 이하고 속도가 100 아래라면
 	if (climbMode && FVector::Distance(destination, me->GetActorLocation())<climbdist && me->GetVelocity().Size() < 100)
 	{
 
 			//오르기 상태로 전환
 			mState = EEnemyState::Climb;
-			//주변에 오르기 가능한 위치를 찾는다
-			//FindClimbPoint();
 
 			//애니메이션 상태 동기화
 			anim->animState = mState;
 
 			currentTime = 0;
-			isMoving = false;
+
 	}
 }
 
@@ -241,10 +237,6 @@ void ULSH_EnemyFSM::ClimbState()
 {
 	ai->StopMovement();
 
-	//me->ClimbMovement(me->GetActorUpVector());
-	//클라임존을 향한 방향벡터
-	/*FVector dir = climbZone->GetActorLocation() - me->GetActorLocation();
-	dir.Normalize();*/
 	me->ClimbMovement(climbZone->GetActorLocation());
 
 }
@@ -277,79 +269,4 @@ void ULSH_EnemyFSM::ClimbUpEvent()
 	
 
 	climbMode = height>10;
-}
-
-
-void ULSH_EnemyFSM::FindClimbPoint()
-{
-	for(int i=0;i<=360;i+=30)
-	{
-		FVector startPos = me->GetActorLocation();
-		FVector endPos = startPos + (UKismetMathLibrary::GetForwardVector(me->GetActorRotation()+FRotator(0,i,0)) * me->climbDistance);
-		DrawDebugLine(GetWorld(), startPos, endPos, FColor::Emerald, false, 5);
-		DrawDebugPoint(GetWorld(), endPos, 5, FColor::Yellow, false, 5);
-		DrawDebugPoint(GetWorld(), startPos, 5, FColor::Yellow, false, 5);
-
-		FHitResult hitInfo;
-		FCollisionQueryParams params;
-		params.AddIgnoredActor(me);
-		bool bHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECC_Visibility, params);
-		if (bHit)//캐스트로 힛액터가 좀비나 클라임존인지 확인 필요...
-		{
-			DrawDebugPoint(GetWorld(), hitInfo.ImpactPoint, 5, FColor::Red, false, 10);
-
-			//ai->MoveToLocation(hitInfo.ImpactPoint);
-
-
-			auto f1 = hitInfo.Normal * me->GetCapsuleComponent()->GetScaledCapsuleRadius();
-			auto f2 = f1 + hitInfo.Location;
-
-			
-
-			// 벽에 찰싹 달라붙게
-			auto r1 = UKismetMathLibrary::MakeRotFromX(-hitInfo.Normal);
-			//auto r1 = me->GetActorRotation() + FRotator(0, i, 0)*-1;
-			FLatentActionInfo Info;
-			Info.CallbackTarget = this;
-			Info.ExecutionFunction = TEXT("OnMoveCompleted"); // 이동 완료 후 실행할 함수 이름
-			Info.Linkage = 0; // 대기열에서 이 기능의 위치
-
-
-			UKismetSystemLibrary::MoveComponentTo(
-				me->GetCapsuleComponent(),
-				f2,
-				r1,
-				false,
-				false,
-				FVector::Distance(hitInfo.Location,me->GetActorLocation()) / 600 ,
-				false,
-				EMoveComponentAction::Type::Move,
-				Info
-			);
-			break;
-			//위치로 도달했다면 올라가기 액션 수행할 것...
-		}
-
-	}
-}
-
-void ULSH_EnemyFSM::OnMoveCompleted()
-{
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("찰싹!"));
-
-
-	//애니메이션 상태 동기화
-	anim->animState = mState;
-}
-
-
-void ULSH_EnemyFSM::FallingEvent()
-{
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("떨어짐!"));
-
-
-	//오르기 상태로 전환
-	mState = EEnemyState::Fall;
-	//애니메이션 상태 동기화
-	anim->animState = mState;
 }

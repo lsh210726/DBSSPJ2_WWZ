@@ -39,22 +39,10 @@ public:
 	UPROPERTY(EditAnywhere)
 	float climbSpeed = 0.3f;
 
-	///모서리에서 올라가기 계산
-	UFUNCTION()
-	void LedgeMantleCalc(FVector startLoc);
-
 	//DoOnce
 	bool doOnce = false;
 
-
-
-	UFUNCTION()
-	void ClimbUpCompleted();
-
 	float currentTime = 0;
-
-	UFUNCTION()
-	void FallingAction();
 
 	UPROPERTY()
 	class UCharacterMovementComponent* CharMov;
