@@ -5,6 +5,7 @@
 #include "LSH_EnemyFSM.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include <Components/CapsuleComponent.h>
+#include "LSH_ClimbSurface.h"
 //밑에 두개 헤더는 정리 필요..
 #include "AIController.h"
 #include "LSH_ClimbZone.h"
@@ -38,6 +39,10 @@ ALSH_BaseZom::ALSH_BaseZom()
 	// OnComponentHit 이벤트 바인딩
 	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &ALSH_BaseZom::OnHit);
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &ALSH_BaseZom::OnBeginOverlap);
+	GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &ALSH_BaseZom::OnEndOverlap);
+
+	bIsColliding = false;
+
 }
 
 // Called when the game starts or when spawned
@@ -90,7 +95,6 @@ void ALSH_BaseZom::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 void ALSH_BaseZom::ClimbMovement(FVector worldDir)
 {
 	FVector Direction = (worldDir - GetActorLocation()).GetSafeNormal();
-	float Distance = (worldDir - GetActorLocation()).Size();
 	CharMov->AddInputVector(Direction);
 
 
@@ -100,19 +104,56 @@ void ALSH_BaseZom::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, 
 {
 	//fsm->ai->StopMovement();
 	//ClimbMovement(fsm->climbZone->GetActorLocation());
+
+	//만약 부딛힌 게 좀비고 그 좀비가 오르기 상태라면
+	auto hitZom = Cast<ALSH_BaseZom>(OtherActor);
+	auto climbsurface = Cast<ALSH_ClimbSurface>(OtherActor);
+	if (climbsurface)
+	{
+		//기어오르기
+		//ClimbMovement(fsm->climbZone->GetActorLocation());
+		fsm->ClimbAction();
+	}
+	//else if (hitZom&&hitZom->fsm->mState==EEnemyState::Climb)
+	//{
+	//	//기어오르기
+	//	ClimbMovement(fsm->climbZone->GetActorLocation());
+	//	fsm->ClimbAction();
+	//}
+	//else
+	//{
+	//	return;//아무것도 안한다
+	//}
+
+	bIsColliding = true;
+
 }
 
 void ALSH_BaseZom::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-		// 여기서 원하는 동작을 수행합니다.
-		UE_LOG(LogTemp, Warning, TEXT("Collision has ended!"));
 
-		//클라임존인지 확인
+		//만약 클라임존에 도착했다면 달리기 시작
 		auto a = Cast<ALSH_ClimbZone>(OtherActor);
 		if (a != nullptr)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("다 올라감!"));
 			CharMov->SetMovementMode(MOVE_Walking);
 			fsm->FallState();
 			fsm->climbMode = false;
 		}
+}
+
+void ALSH_BaseZom::OnEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	//떨어지기
+	if (bIsColliding)
+	{
+		bIsColliding = false;
+
+		// 여기서 원하는 동작을 수행합니다.
+		UE_LOG(LogTemp, Warning, TEXT("이동 혹은 떨어짐!"));
+
+		CharMov->SetMovementMode(MOVE_Walking);
+		fsm->FallState();
+	}
 }

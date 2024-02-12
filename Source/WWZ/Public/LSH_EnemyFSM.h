@@ -93,4 +93,11 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	float climbdist = 800;
+
+	//시작하자 마자 기어오르지 못하도록
+	bool isFast = false;
+
+	///좀비가 부딛히기 시작할 시 취할 행동
+	UFUNCTION()
+	void ClimbAction();
 };

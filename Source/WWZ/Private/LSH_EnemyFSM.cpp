@@ -81,8 +81,8 @@ void ULSH_EnemyFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 		ClimbState();
 		break;	
 	case EEnemyState::Fall:
-			FallState();
-			break;
+		FallState();
+		break;
 	}
 }
 
@@ -128,21 +128,25 @@ void ULSH_EnemyFSM::MoveState()
 		currentTime = attackDelayTime;
 	} 
 
-	auto speed = me->GetVelocity().Size();
+	//auto speed = me->GetVelocity().Size();
 
-	//만약 오르기 모드고 목적지와 거리가 100 이하고 속도가 100 아래라면
-	if (climbMode && FVector::Distance(destination, me->GetActorLocation())<climbdist && me->GetVelocity().Size() < 100)
-	{
+	//if (me->GetVelocity().Size() > 100)isFast = true;
 
-			//오르기 상태로 전환
-			mState = EEnemyState::Climb;
+	////만약 오르기 모드고 목적지와 거리가 100 이하고 속도가 100 아래라면
+	//if (climbMode && isFast && me->GetVelocity().Size() < 100)
+	//{
 
-			//애니메이션 상태 동기화
-			anim->animState = mState;
+	//		//오르기 상태로 전환
+	//		mState = EEnemyState::Climb;
 
-			currentTime = 0;
+	//		//애니메이션 상태 동기화
+	//		anim->animState = mState;
 
-	}
+	//		currentTime = 0;
+
+	//		isFast = false;
+
+	//}
 }
 
 void ULSH_EnemyFSM::AttackState()
@@ -235,7 +239,6 @@ void ULSH_EnemyFSM::OnDamageProcess()
 
 void ULSH_EnemyFSM::ClimbState()
 {
-	ai->StopMovement();
 
 	me->ClimbMovement(climbZone->GetActorLocation());
 
@@ -269,4 +272,15 @@ void ULSH_EnemyFSM::ClimbUpEvent()
 	
 
 	climbMode = height>10;
+}
+
+void ULSH_EnemyFSM::ClimbAction()
+{
+	ai->StopMovement();
+
+	//오르기 상태로 전환
+	mState = EEnemyState::Climb;
+
+	//애니메이션 상태 동기화
+	anim->animState = mState;
 }

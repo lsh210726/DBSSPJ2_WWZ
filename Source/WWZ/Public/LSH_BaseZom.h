@@ -47,12 +47,20 @@ public:
 	UPROPERTY()
 	class UCharacterMovementComponent* CharMov;
 
+	// 충돌 중인지 여부
+	bool bIsColliding;
+
 	// 충돌 이벤트 핸들러
 	UFUNCTION()
     void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
+	// 충돌 종료 이벤트 핸들러
+    UFUNCTION()
+    void OnEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	
 	// 오버랩 이벤트 핸들러
     UFUNCTION()
     void OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
 
 };
