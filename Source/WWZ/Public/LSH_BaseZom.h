@@ -29,11 +29,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "FSMComponent")
 	class ULSH_EnemyFSM* fsm;
 
-	UFUNCTION()
-	void ClimbAction();
 
 	UPROPERTY(EditAnywhere, Category = "climb")
-	float climbDistance = 50;
+	float climbDistance = 100.0f;
 
 	UFUNCTION()
 	void ClimbMovement(FVector worldDir);
@@ -47,4 +45,26 @@ public:
 
 	//DoOnce
 	bool doOnce = false;
+
+
+
+	UFUNCTION()
+	void ClimbUpCompleted();
+
+	float currentTime = 0;
+
+	UFUNCTION()
+	void FallingAction();
+
+	UPROPERTY()
+	class UCharacterMovementComponent* CharMov;
+
+	// 충돌 이벤트 핸들러
+	UFUNCTION()
+    void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+	// 오버랩 이벤트 핸들러
+    UFUNCTION()
+    void OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
 };

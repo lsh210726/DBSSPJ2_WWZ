@@ -6,6 +6,15 @@
 #include "GameFramework/Character.h"
 #include "YSH_Player.generated.h"
 
+UENUM(BlueprintType)
+enum class EWeapon : uint8
+{
+	GrenadeGun,
+	SniperGun,
+	BasicGun,
+	Chainsaw
+};
+
 UCLASS()
 class WWZ_API AYSH_Player : public ACharacter
 {
@@ -93,12 +102,15 @@ public:
 
 	void Zoom();
 
-	FORCEINLINE void OnActionZoomIn();
-	FORCEINLINE void OnActionZoomOut();
+	void OnActionZoomIn();
+	void OnActionZoomOut();
 
 	/// <summary> true면 SniperGun, false면 GrenadeGun </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bChooseSniperGun = false; //true면 SniperGun, false면 GrenadeGun
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bChooseChainSaw = false;
 
 	//십자가 키고, 끄기
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -142,4 +154,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int totalSnaMagazin = 10;
+
+	public:
+	//무기 리스트
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		EWeapon CurrentWeaponType;
+
 };

@@ -16,6 +16,7 @@ enum class EEnemyState :uint8
 	Damage,
 	Die,
 	Climb,
+	Fall,
 };
 
 
@@ -45,21 +46,22 @@ public:
 	void DamageState();
 	void DieState();
 	void ClimbState();
+	void FallState();
 
 	UPROPERTY(EditDefaultsOnly, Category = "FSM")
 	float idleDelayTime = 2;
 	float currentTime = 0;
 
 	UPROPERTY(VisibleAnywhere, Category = "FSM")
-	class ALSH_ClimbZone* target;
-
-	//class AWWZCharacter* target;
+	class AYSH_Player* target;
+	UPROPERTY(VisibleAnywhere, Category = "FSM")
+	class ALSH_ClimbZone* climbZone;
 
 	UPROPERTY()
 	class ALSH_BaseZom* me;
 
 	UPROPERTY(EditAnywhere, Category = "FSM")
-	float attackRange = 50.0f;
+	float attackRange = 100.0f;
 
 	UPROPERTY(EditAnywhere, Category = "FSM")
 	float attackDelayTime = 3.0f;
@@ -83,14 +85,27 @@ public:
 	UPROPERTY()
 	class AAIController* ai;
 
-	bool isInMaxSpeed = false;
-
-	UFUNCTION()
-	void ClimbZoneOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	UFUNCTION()
-	void ClimbZoneEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-
 	//UPROPERTY()
 	//class ALSH_ClimbZone* climbZone;
+
+	UFUNCTION()
+	void ClimbUpEvent();
+
+	UPROPERTY(BlueprintReadOnly)
+	bool climbMode=true;
+
+	UFUNCTION()
+	void FindClimbPoint();
+
+	UFUNCTION()
+	void OnMoveCompleted();
+
+	bool isMoving = false;
+
+
+	UFUNCTION()
+	void FallingEvent();
+
+	UPROPERTY(EditAnywhere)
+	float climbdist = 800;
 };
