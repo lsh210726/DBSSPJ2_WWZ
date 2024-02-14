@@ -74,5 +74,5 @@ Plugins/*/Intermediate/*
 DerivedDataCache/*
 
 Content/Bazaar_Meshingun/*
-Content/Levels/*
+Content/Levels/*.umap
 Content/ParagonLtBelica/*
