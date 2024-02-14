@@ -66,7 +66,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "FSM")
 	float attackDelayTime = 3.0f;
 
-	void OnDamageProcess();
+	UFUNCTION(BlueprintCallable)
+	void OnDamageProcess(int32 damage = 1);
 
 	//HP
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "FSM")
@@ -100,4 +101,11 @@ public:
 	///좀비가 부딛히기 시작할 시 취할 행동
 	UFUNCTION()
 	void ClimbAction();
+
+	//좀비가 스폰될때 실행될 활성화 이벤트
+	UFUNCTION()
+	void ActiveAction();
+
+	//좀비가 대기열에 들어갈 때 실행될 비활성화 이벤트
+
 };

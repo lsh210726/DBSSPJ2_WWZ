@@ -89,19 +89,7 @@ void ULSH_EnemyFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 void ULSH_EnemyFSM::IdleState()
 {
 
-	//시간이 흐름
-	currentTime += GetWorld()->DeltaTimeSeconds;
-	//경과시간이 대기시간을 넘김
-	if (currentTime > idleDelayTime)
-	{
-		//이동상태로 전환
-		mState = EEnemyState::Move;
-		//경과시간 초기화
-		currentTime = 0;
 
-		//애니메이션 상태 동기화
-		anim->animState = mState;
-	}
 }
 void ULSH_EnemyFSM::MoveState() 
 {
@@ -128,25 +116,6 @@ void ULSH_EnemyFSM::MoveState()
 		currentTime = attackDelayTime;
 	} 
 
-	//auto speed = me->GetVelocity().Size();
-
-	//if (me->GetVelocity().Size() > 100)isFast = true;
-
-	////만약 오르기 모드고 목적지와 거리가 100 이하고 속도가 100 아래라면
-	//if (climbMode && isFast && me->GetVelocity().Size() < 100)
-	//{
-
-	//		//오르기 상태로 전환
-	//		mState = EEnemyState::Climb;
-
-	//		//애니메이션 상태 동기화
-	//		anim->animState = mState;
-
-	//		currentTime = 0;
-
-	//		isFast = false;
-
-	//}
 }
 
 void ULSH_EnemyFSM::AttackState()
@@ -207,9 +176,9 @@ void ULSH_EnemyFSM::DieState()
 	UE_LOG(LogTemp, Log, TEXT("Die"));
 }
 
-void ULSH_EnemyFSM::OnDamageProcess()
+void ULSH_EnemyFSM::OnDamageProcess(int32 damage)
 {
-	hp--;
+	hp-=damage;
 	//체력이 0보다 크면 데미지 상태, 아니면 죽음
 	if (hp > 0)
 	{
@@ -233,6 +202,7 @@ void ULSH_EnemyFSM::OnDamageProcess()
 		me->GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
 		me->GetMesh()->SetSimulatePhysics(true);
 		me->CharMov->DisableMovement();
+		//캡술컨포넌트 충돌 없애기
 	}
 
 
@@ -286,4 +256,20 @@ void ULSH_EnemyFSM::ClimbAction()
 
 	//애니메이션 상태 동기화
 	anim->animState = mState;
+}
+
+void ULSH_EnemyFSM::ActiveAction()
+{
+
+	me->GetMesh()->SetCollisionProfileName(TEXT("Pawn"));
+	me->GetMesh()->SetSimulatePhysics(false);
+
+	//오르기 상태로 전환
+	mState = EEnemyState::Move;
+
+	//애니메이션 상태 동기화
+	anim->animState = mState;
+
+	climbMode = true;
+
 }
