@@ -14,7 +14,7 @@
 #include "NavFilters/NavigationQueryFilter.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "YSH_Player.h"
-
+#include "GameFramework/CharacterMovementComponent.h"
 
 
 
@@ -112,8 +112,8 @@ void ULSH_EnemyFSM::MoveState()
 	//me->AddMovementInput(dir.GetSafeNormal());
 	ai->MoveToLocation(destination);
 
-	DrawDebugPoint(GetWorld(), destination, 20, FColor::Purple, false, GetWorld()->GetDeltaSeconds());
-	DrawDebugLine(GetWorld(), me->GetActorLocation(), destination, FColor::White, false, GetWorld()->GetDeltaSeconds());
+	//DrawDebugPoint(GetWorld(), destination, 20, FColor::Purple, false, GetWorld()->GetDeltaSeconds());
+	//DrawDebugLine(GetWorld(), me->GetActorLocation(), destination, FColor::White, false, GetWorld()->GetDeltaSeconds());
 
 	//오르기 모드가 아니고 공격 가능 거리에 플레이어가 있다면
 	if (!climbMode && dir.Size() < attackRange)
@@ -175,18 +175,18 @@ void ULSH_EnemyFSM::AttackState()
 }
 void ULSH_EnemyFSM::DamageState()
 {
-	//시간 흐르기
-	currentTime += GetWorld()->DeltaTimeSeconds;
-	//경과시간이 대기시간을 지나면
-	if (currentTime > damageDelayTime)
-	{
-		//대기상태로 전환
-		mState = EEnemyState::Idle;
-		//경과시간 초기화
-		currentTime = 0;
-		//애니메이션 상태 동기화
-		anim->animState = mState;
-	}
+	////시간 흐르기
+	//currentTime += GetWorld()->DeltaTimeSeconds;
+	////경과시간이 대기시간을 지나면
+	//if (currentTime > damageDelayTime)
+	//{
+	//	//대기상태로 전환
+	//	mState = EEnemyState::Idle;
+	//	//경과시간 초기화
+	//	currentTime = 0;
+	//	//애니메이션 상태 동기화
+	//	anim->animState = mState;
+	//}
 }
 void ULSH_EnemyFSM::DieState()
 {
@@ -213,23 +213,26 @@ void ULSH_EnemyFSM::OnDamageProcess()
 	//체력이 0보다 크면 데미지 상태, 아니면 죽음
 	if (hp > 0)
 	{
-		//상태를 피격으로 전환
-		mState = EEnemyState::Damage;
+		////상태를 피격으로 전환
+		//mState = EEnemyState::Damage;
 
-		currentTime = 0;
-		//피격 애니메이션 재생
-		int32 index = FMath::RandRange(0, 1);
-		FString sectionName = FString::Printf(TEXT("Damage%d"), index);
-		anim->PlayDamageAnim(FName(*sectionName));
+		//currentTime = 0;
+		////피격 애니메이션 재생
+		//int32 index = FMath::RandRange(0, 1);
+		//FString sectionName = FString::Printf(TEXT("Damage%d"), index);
+		//anim->PlayDamageAnim(FName(*sectionName));
 	}
 	else
 	{
 
-		mState = EEnemyState::Die;
-		//충돌 없애기
-		me->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		//죽음 애니메이션 재생
-		anim->PlayDamageAnim(TEXT("Die"));
+		//mState = EEnemyState::Die;
+		////충돌 없애기
+		//me->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		////죽음 애니메이션 재생
+		//anim->PlayDamageAnim(TEXT("Die"));
+		me->GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
+		me->GetMesh()->SetSimulatePhysics(true);
+		me->CharMov->DisableMovement();
 	}
 
 

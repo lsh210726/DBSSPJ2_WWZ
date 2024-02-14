@@ -19,6 +19,7 @@ public:
 
 virtual void NativeUpdateAnimation( float DeltaSeconds ) override;
 
+void PlayAttackAnim();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool isFalling;
@@ -29,9 +30,16 @@ virtual void NativeUpdateAnimation( float DeltaSeconds ) override;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float pitch;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	class UAnimMontage* playerFireMontage;
-
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	//class UAnimMontage* playerFireMontage;
+public:
+	UFUNCTION()
 	void PlayerAttackAnim();
+
+	UPROPERTY(EditAnywhere)
+	class AYSH_Player* player;
+
+	UPROPERTY(EditDefaultsOnly, Category = PlayerAnim)
+	class UAnimMontage* playFireanimMontage;
 
 };

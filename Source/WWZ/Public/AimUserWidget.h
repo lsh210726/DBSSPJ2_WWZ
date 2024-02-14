@@ -19,11 +19,20 @@ public:
 	UPROPERTY(BlueprintReadOnly, Transient, meta = (BindWidget))
 	class UImage* WhiteCrossAim;
 
+	UPROPERTY(BlueprintReadOnly, Transient, meta = (BindWidget))
+	class UImage* RedCrossAim;
+
 	UFUNCTION()
 	void WhiteAimInvisible();
 
 	UFUNCTION()
 	void WhiteAimVisible();
+
+	UFUNCTION()
+	void RedAimVisible();
+
+	UFUNCTION()
+	void RedAimInvisible();
 
 	void OnFireDelayComplete();
 };

@@ -9,7 +9,7 @@
 void UYSH_PlayerAnim::NativeUpdateAnimation(float DeltaSeconds)
 {
 	// 1. 오너 폰을 가져와서 ATPSPlayer로 Cast하고 싶다.
-	AYSH_Player* player = Cast<AYSH_Player>(TryGetPawnOwner());
+	player = Cast<AYSH_Player>(TryGetPawnOwner());
 	if (nullptr == player)
 	{
 		return;
@@ -27,9 +27,11 @@ void UYSH_PlayerAnim::NativeUpdateAnimation(float DeltaSeconds)
 	// 5. 오너의 aim rotation값을 가져와서 pitch를 채우고싶다.
 	pitch = player->GetBaseAimRotation().Pitch;
 
+	//playFireanimMontage = player->fireMontage;
+
 }
 
 void UYSH_PlayerAnim::PlayerAttackAnim()
 {
-	//Montage_Play(playerFireMontage);
+	//player->PlayAnimMontage(playFireanimMontage, 1);
 }

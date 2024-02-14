@@ -10,6 +10,7 @@
 #include "AIController.h"
 #include "LSH_ClimbZone.h"
 #include "LSH_EnemyAnim.h"
+#include "LSH_ClimbOverZone.h"
 
 
 
@@ -108,11 +109,13 @@ void ALSH_BaseZom::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, 
 	//만약 부딛힌 게 좀비고 그 좀비가 오르기 상태라면
 	auto hitZom = Cast<ALSH_BaseZom>(OtherActor);
 	auto climbsurface = Cast<ALSH_ClimbSurface>(OtherActor);
-	if (climbsurface)
+	if (!bIsColliding && climbsurface)
 	{
 		//기어오르기
 		//ClimbMovement(fsm->climbZone->GetActorLocation());
 		fsm->ClimbAction();
+		bIsColliding = true;
+		SetActorRotation(FRotator(0,-1 * Hit.ImpactNormal.Rotation().Yaw, 0));
 	}
 	//else if (hitZom&&hitZom->fsm->mState==EEnemyState::Climb)
 	//{
@@ -125,15 +128,20 @@ void ALSH_BaseZom::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, 
 	//	return;//아무것도 안한다
 	//}
 
-	bIsColliding = true;
-
+	//UE_LOG(LogTemp, Warning, TEXT("%s!"),*OtherActor->GetName());
 }
 
 void ALSH_BaseZom::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	//UE_LOG(LogTemp, Warning, TEXT("%s!"), *OtherActor->GetName());
 
 		//만약 클라임존에 도착했다면 달리기 시작
+	//클라임오버존에 도착했다면 기어오르기 시작
 		auto a = Cast<ALSH_ClimbZone>(OtherActor);
+		if (Cast<ALSH_ClimbOverZone>(OtherActor)!=nullptr)
+		{
+			fsm->anim->bClimbOver = true;
+		}
 		if (a != nullptr)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("다 올라감!"));
@@ -145,6 +153,8 @@ void ALSH_BaseZom::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 
 void ALSH_BaseZom::OnEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+	UE_LOG(LogTemp, Warning, TEXT("endoverlap!"));
+
 	//떨어지기
 	if (bIsColliding)
 	{

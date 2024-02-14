@@ -35,4 +35,7 @@ public:
 	//기어올라가기 몽타지 재생
 	UFUNCTION(BlueprintImplementableEvent, Category = "FSMEvent")
 	void PlayClimbUpAnim();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "FSM")
+	bool bClimbOver = false;
 };
