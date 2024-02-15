@@ -37,11 +37,6 @@ ALSH_BaseZom::ALSH_BaseZom()
 		GetMesh()->SetAnimInstanceClass(tempClass.Class);
 	}
 
-	// OnComponentHit 이벤트 바인딩
-	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &ALSH_BaseZom::OnHit);
-	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &ALSH_BaseZom::OnBeginOverlap);
-	GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &ALSH_BaseZom::OnEndOverlap);
-
 	bIsColliding = false;
 
 }
@@ -52,7 +47,11 @@ void ALSH_BaseZom::BeginPlay()
 	Super::BeginPlay();
 	CharMov = GetCharacterMovement();
 
-	
+	// OnComponentHit 이벤트 바인딩
+	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &ALSH_BaseZom::OnHit);
+	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &ALSH_BaseZom::OnBeginOverlap);
+	GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &ALSH_BaseZom::OnEndOverlap);
+
 }
 
 // Called every frame

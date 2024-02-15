@@ -103,9 +103,14 @@ public:
 	void ClimbAction();
 
 	//좀비가 스폰될때 실행될 활성화 이벤트
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void ActiveAction();
 
 	//좀비가 대기열에 들어갈 때 실행될 비활성화 이벤트
+	UFUNCTION(BlueprintCallable)
+	void DeActiveAction();
 
+	//대기열로 돌아가기 위한 좀비매니저 저장
+	UPROPERTY()
+	class ALSH_ZombieManager* zombieManager;
 };

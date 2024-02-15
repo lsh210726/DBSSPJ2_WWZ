@@ -15,6 +15,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "YSH_Player.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "LSH_ZombieManager.h"
 
 
 
@@ -203,6 +204,7 @@ void ULSH_EnemyFSM::OnDamageProcess(int32 damage)
 		me->GetMesh()->SetSimulatePhysics(true);
 		me->CharMov->DisableMovement();
 		//캡술컨포넌트 충돌 없애기
+		me->GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"));
 	}
 
 
@@ -261,8 +263,9 @@ void ULSH_EnemyFSM::ClimbAction()
 void ULSH_EnemyFSM::ActiveAction()
 {
 
-	me->GetMesh()->SetCollisionProfileName(TEXT("Pawn"));
-	me->GetMesh()->SetSimulatePhysics(false);
+	hp = 3;
+
+	me->GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
 
 	//오르기 상태로 전환
 	mState = EEnemyState::Move;
@@ -270,6 +273,19 @@ void ULSH_EnemyFSM::ActiveAction()
 	//애니메이션 상태 동기화
 	anim->animState = mState;
 
+	me->CharMov->SetMovementMode(MOVE_Walking);
+
 	climbMode = true;
+
+}
+
+void ULSH_EnemyFSM::DeActiveAction()
+{
+	auto mesh = me->GetMesh();
+	mesh->SetSimulatePhysics(false);
+	mesh->SetCollisionProfileName(TEXT("NoCollision"));
+	mesh->SetAnimationMode(EAnimationMode::AnimationBlueprint);
+	mesh->SetRelativeLocationAndRotation(FVector(0, 0, -88), FRotator(0, -90, 0));
+	me->SetActorLocation(zombieManager->queueLocation->GetComponentLocation());
 
 }
