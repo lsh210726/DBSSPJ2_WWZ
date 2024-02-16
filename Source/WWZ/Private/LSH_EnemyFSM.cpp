@@ -40,8 +40,6 @@ void ULSH_EnemyFSM::BeginPlay()
 	auto actor = UGameplayStatics::GetActorOfClass(GetWorld(), AYSH_Player::StaticClass());
 	target = Cast<AYSH_Player>(actor);
 
-	//클라임 존 찾기
-	climbZone = Cast<ALSH_ClimbZone>(UGameplayStatics::GetActorOfClass(GetWorld(), ALSH_ClimbZone::StaticClass()));
 
 	me = Cast<ALSH_BaseZom>(GetOwner());
 
@@ -94,14 +92,14 @@ void ULSH_EnemyFSM::IdleState()
 }
 void ULSH_EnemyFSM::MoveState() 
 {
-	FVector destination =  climbMode ? climbZone->GetActorLocation() : target->GetActorLocation();
+	FVector destination =  climbMode ? climbZoneLocaion : target->GetActorLocation();
 
 	FVector dir = destination - me->GetActorLocation();
 	//이동
 	//me->AddMovementInput(dir.GetSafeNormal());
 	ai->MoveToLocation(destination);
 
-	//DrawDebugPoint(GetWorld(), destination, 20, FColor::Purple, false, GetWorld()->GetDeltaSeconds());
+	DrawDebugPoint(GetWorld(), destination, 20, FColor::Purple, false, GetWorld()->GetDeltaSeconds());
 	//DrawDebugLine(GetWorld(), me->GetActorLocation(), destination, FColor::White, false, GetWorld()->GetDeltaSeconds());
 
 	//오르기 모드가 아니고 공격 가능 거리에 플레이어가 있다면
@@ -205,6 +203,8 @@ void ULSH_EnemyFSM::OnDamageProcess(int32 damage)
 		me->CharMov->DisableMovement();
 		//캡술컨포넌트 충돌 없애기
 		me->GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"));
+
+		zombieManager->bodyCollecting(me);
 	}
 
 
@@ -215,7 +215,7 @@ void ULSH_EnemyFSM::OnDamageProcess(int32 damage)
 void ULSH_EnemyFSM::ClimbState()
 {
 
-	me->ClimbMovement(climbZone->GetActorLocation());
+	me->ClimbMovement(climbZoneLocaion);
 
 }
 
@@ -260,12 +260,12 @@ void ULSH_EnemyFSM::ClimbAction()
 	anim->animState = mState;
 }
 
-void ULSH_EnemyFSM::ActiveAction()
+void ULSH_EnemyFSM::ActiveAction(FVector targetLocation)
 {
-
+	climbZoneLocaion = targetLocation;
 	hp = 3;
 
-	me->GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
+	me->GetCapsuleComponent()->SetCollisionProfileName(TEXT("zombie"));
 
 	//오르기 상태로 전환
 	mState = EEnemyState::Move;
@@ -277,6 +277,8 @@ void ULSH_EnemyFSM::ActiveAction()
 
 	climbMode = true;
 
+	me->bIsColliding = false;
+
 }
 
 void ULSH_EnemyFSM::DeActiveAction()
@@ -287,5 +289,12 @@ void ULSH_EnemyFSM::DeActiveAction()
 	mesh->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 	mesh->SetRelativeLocationAndRotation(FVector(0, 0, -88), FRotator(0, -90, 0));
 	me->SetActorLocation(zombieManager->queueLocation->GetComponentLocation());
+	//fsm, 애니메이션 초기화 필요
+		//오르기 상태로 전환
+	mState = EEnemyState::Idle;
 
+	//애니메이션 상태 동기화
+	anim->animState = mState;
+
+	me->CharMov->SetMovementMode(MOVE_None);
 }

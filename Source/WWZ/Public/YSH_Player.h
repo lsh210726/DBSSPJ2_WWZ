@@ -53,19 +53,19 @@ public:
 
 	void OnActionJump();
 
-	// ÃÑ ¸Þ½Ã¸¦ Ãß°¡ÇÏ°í½Í´Ù.
+	// ï¿½ï¿½ ï¿½Þ½Ã¸ï¿½ ï¿½ß°ï¿½ï¿½Ï°ï¿½Í´ï¿½.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	class USkeletalMeshComponent* gunMeshComp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	class UStaticMeshComponent* sniperMeshComp;
 
-	// Àü±âÅé¸Þ½Ã¸¦ Ãß°¡ÇÏ°í½Í´Ù.
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Þ½Ã¸ï¿½ ï¿½ß°ï¿½ï¿½Ï°ï¿½Í´ï¿½.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	class USkeletalMeshComponent* ChainsawMeshComp;
 
-	// ÃÑ¾Ë°øÀåÀ» ¸¸µé°í½Í´Ù.
-	// ¸¶¿ì½º ¿ÞÂÊ ¹öÆ°À» ´©¸£¸é ÃÑ¾Ë°øÀå¿¡¼­ ÃÑ¾ËÀ»¸¸µé¾î¼­ FirePosition¼ÒÄÏ¿¡ ¹èÄ¡ÇÏ°í½Í´Ù.
+	// ï¿½Ñ¾Ë°ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í´ï¿½.
+	// ï¿½ï¿½ï¿½ì½º ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ñ¾Ë°ï¿½ï¿½å¿¡ï¿½ï¿½ ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½î¼­ FirePositionï¿½ï¿½ï¿½Ï¿ï¿½ ï¿½ï¿½Ä¡ï¿½Ï°ï¿½Í´ï¿½.
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AYSH_BulletActor> bulletFactory;
@@ -107,18 +107,18 @@ public:
 
 	void OnActionPickUp();
 
-	/// <summary> true¸é SniperGun, false¸é GrenadeGun </summary>
+	/// <summary> trueï¿½ï¿½ SniperGun, falseï¿½ï¿½ GrenadeGun </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool bChooseSniperGun = false; //true¸é SniperGun, false¸é GrenadeGun
+	bool bChooseSniperGun = false; //trueï¿½ï¿½ SniperGun, falseï¿½ï¿½ GrenadeGun
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bChooseChainSaw = false;
 
-	//½ÊÀÚ°¡ Å°°í, ²ô±â
+	//ï¿½ï¿½ï¿½Ú°ï¿½ Å°ï¿½ï¿½, ï¿½ï¿½ï¿½
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bCrossOn = false;
 
-	//¸®·Îµù UI ¾÷·Îµå
+	//ï¿½ï¿½ï¿½Îµï¿½ UI ï¿½ï¿½ï¿½Îµï¿½
 
 	UPROPERTY()
 	class UReloadUserWidget* reloadUI;
@@ -137,15 +137,15 @@ public:
 	int totalGreMagazin = 100;
 
 
-	//hp, magazine °ü·Ã ui
+	//hp, magazine ï¿½ï¿½ï¿½ï¿½ ui
 	UPROPERTY()
 	class UPlayerUserWidget* playerUI;
 
 	UPROPERTY( EditAnywhere )
 	TSubclassOf<class UUserWidget> playerFactory;
 
-	float ReloadTime = 2.0f;// ÀçÀåÀü¿¡ ¼Ò¿äµÇ´Â ½Ã°£
-	bool bCanFire = true;    // ÇöÀç ÃÑÀ» ¹ß»çÇÒ ¼ö ÀÖ´ÂÁö ¿©ºÎ
+	float ReloadTime = 2.0f;// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ò¿ï¿½Ç´ï¿½ ï¿½Ã°ï¿½
+	bool bCanFire = true;    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß»ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö´ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	float AimLoadTime = 0.2f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -164,7 +164,7 @@ public:
 	class USoundBase* fireSFX;
 
 	public:
-	//¹«±â ¸®½ºÆ®
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®
 		UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		EWeapon CurrentWeaponType;
 

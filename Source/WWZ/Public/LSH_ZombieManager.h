@@ -32,6 +32,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	class UStaticMeshComponent* spawnLocation2;
 
+	FVector spawnVec1;
+	FVector spawnVec2;
+
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class ALSH_BaseZom> zombieFactory;
 
@@ -44,7 +47,7 @@ public:
 	TArray<class ALSH_BaseZom*> bodyList;
 
 	UPROPERTY(EditAnywhere, Category = "zombie manager")
-	int32 zomMaxNum = 50;
+	int32 zomMaxNum = 60;
 
 	UPROPERTY(EditAnywhere, Category = "zombie manager")
 	int32 bodyMaxNum = 10;

@@ -4,6 +4,8 @@
 #include "LSH_ZombieManager.h"
 #include "LSH_BaseZom.h"
 #include "LSH_EnemyFSM.h"
+#include <Kismet/GameplayStatics.h>
+#include "LSH_ClimbZone.h"
 
 
 // Sets default values
@@ -22,6 +24,28 @@ ALSH_ZombieManager::ALSH_ZombieManager()
 void ALSH_ZombieManager::BeginPlay()
 {
 	Super::BeginPlay();
+
+	TArray<AActor*> climbZoneArray;
+	//UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), ALSH_ClimbZone::StaticClass(),TEXT("1"));
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALSH_ClimbZone::StaticClass(),climbZoneArray);
+
+	for (auto a : climbZoneArray)
+	{
+		if (a->GetActorLabel().Contains(TEXT("1")))
+		{
+			
+			spawnVec1 = a->GetActorLocation();
+			UE_LOG(LogTemp, Warning, TEXT("spwnvec1 :%f, %f, %f"),spawnVec1.X, spawnVec1.Y, spawnVec1.Z);
+		}
+		else if (a->GetActorLabel().Contains(TEXT("2")))
+		{
+			spawnVec2 = a->GetActorLocation();
+			UE_LOG(LogTemp, Warning, TEXT("spwnvec2 :%f, %f, %f"), spawnVec2.X, spawnVec2.Y, spawnVec2.Z);
+
+		}
+	}
+
+	//레벨에 배치된 클라임존 1, 2를 찾고 위치 정보를 저장해야 한다 
 	
 	for (int i = 0;  i < zomMaxNum;  i++)
 	{
@@ -56,7 +80,7 @@ void ALSH_ZombieManager::Tick(float DeltaTime)
 	{
 		auto zombie = zombieQueue[0];
 		zombie->SetActorTransform(spawnLocChecker ? spawnLocation1->GetComponentTransform():spawnLocation2->GetComponentTransform());
-		zombie->fsm->ActiveAction();
+		zombie->fsm->ActiveAction(spawnLocChecker ? spawnVec1 : spawnVec2);
 		zombieQueue.RemoveAt(0);
 		currentTime = 0;
 	}
@@ -68,13 +92,13 @@ void ALSH_ZombieManager::Tick(float DeltaTime)
 		spawnLocChecker = !spawnLocChecker;
 	}
 
-	UE_LOG(LogTemp, Log, TEXT(" zombieQueue : %d, bodyList : %d"), zombieQueue.Num(), bodyList.Num());
+	UE_LOG(LogTemp, Log, TEXT(" zombieQueueNum : %d, bodyListNum : %d"), zombieQueue.Num(), bodyList.Num());
 }
 
 void ALSH_ZombieManager::bodyCollecting(class ALSH_BaseZom* zombie)
 {
 	//만약 이미 시체리스트가 다 찼다면
-	if (bodyMaxNum<bodyList.Num())
+	if (bodyMaxNum<=bodyList.Num())
 	{
 		//제일 먼저 들어온 좀비를 좀비 대기열에 등록한다
 		zombieQueue.Add(bodyList[0]);
@@ -86,7 +110,7 @@ void ALSH_ZombieManager::bodyCollecting(class ALSH_BaseZom* zombie)
 		bodyList.Add(zombie);
 
 		//만약 대기열이 꽉 찼다면
-		if (zombieQueue.Num() > queueMaxNum)
+		if (zombieQueue.Num() >= queueMaxNum)
 		{
 			//스폰모드를 켠다
 			bisSpawning = true;

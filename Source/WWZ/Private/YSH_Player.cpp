@@ -269,13 +269,13 @@ void AYSH_Player::OnActionFire()
 				{
 					UE_LOG(LogTemp, Log, TEXT("hit"));
 					auto enemyFSM = Cast<ULSH_EnemyFSM>(enemy);
-					enemyFSM->OnDamageProcess();
+					enemyFSM->OnDamageProcess(3);
 					crossHairUI->RedAimVisible();
 
 				}
 			}
 
-			CurrentSnaMagazin -= 1;
+			//CurrentSnaMagazin -= 1;
 			crossHairUI->WhiteAimInvisible();
 
 			if (CurrentSnaMagazin == 0)

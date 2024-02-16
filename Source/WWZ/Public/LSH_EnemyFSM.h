@@ -54,8 +54,6 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = "FSM")
 	class AYSH_Player* target;
-	UPROPERTY(VisibleAnywhere, Category = "FSM")
-	class ALSH_ClimbZone* climbZone;
 
 	UPROPERTY()
 	class ALSH_BaseZom* me;
@@ -104,7 +102,7 @@ public:
 
 	//좀비가 스폰될때 실행될 활성화 이벤트
 	UFUNCTION(BlueprintCallable)
-	void ActiveAction();
+	void ActiveAction(FVector targetLocation);
 
 	//좀비가 대기열에 들어갈 때 실행될 비활성화 이벤트
 	UFUNCTION(BlueprintCallable)
@@ -113,4 +111,6 @@ public:
 	//대기열로 돌아가기 위한 좀비매니저 저장
 	UPROPERTY()
 	class ALSH_ZombieManager* zombieManager;
+
+	FVector climbZoneLocaion;
 };

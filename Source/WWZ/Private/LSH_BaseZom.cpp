@@ -37,6 +37,8 @@ ALSH_BaseZom::ALSH_BaseZom()
 		GetMesh()->SetAnimInstanceClass(tempClass.Class);
 	}
 
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"));
+
 	bIsColliding = false;
 
 }
@@ -111,7 +113,7 @@ void ALSH_BaseZom::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, 
 	{
 		fsm->ClimbAction();
 		bIsColliding = true;
-		SetActorRotation(FRotator(0,-1 * Hit.ImpactNormal.Rotation().Yaw, 0));
+		SetActorRotation(FRotator(0, (climbsurface->GetActorUpVector()*-1).Rotation().Yaw, 0));
 	}
 
 }
