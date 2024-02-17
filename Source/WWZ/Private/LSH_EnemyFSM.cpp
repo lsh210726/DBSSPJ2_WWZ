@@ -102,8 +102,10 @@ void ULSH_EnemyFSM::MoveState()
 	//me->AddMovementInput(dir.GetSafeNormal());
 	ai->MoveToLocation(destination);
 
-	DrawDebugPoint(GetWorld(), destination, 20, FColor::Purple, false, GetWorld()->GetDeltaSeconds());
+	//DrawDebugPoint(GetWorld(), destination, 20, FColor::Purple, false, GetWorld()->GetDeltaSeconds());
 	//DrawDebugLine(GetWorld(), me->GetActorLocation(), destination, FColor::White, false, GetWorld()->GetDeltaSeconds());
+
+	anim->speed = me->GetVelocity().Size();
 
 	//오르기 모드가 아니고 공격 가능 거리에 플레이어가 있다면
 	if (!climbMode && dir.Size() < attackRange)
@@ -122,27 +124,32 @@ void ULSH_EnemyFSM::MoveState()
 
 void ULSH_EnemyFSM::AttackState()
 {
-	//일정 시간마다 공격
 	currentTime += GetWorld()->DeltaTimeSeconds;
-	//공격시간이 되면
-	if (currentTime > attackDelayTime)
+	//타깃과의 거리
+	float distance = FVector::Distance(target->GetActorLocation(), me->GetActorLocation());
+	//거리가 공격범위를 벗어나면
+	if (distance > attackRange)
 	{
+
+		//이동
+		mState = EEnemyState::Move;
+		//애니메이션 상태 동기화
+		anim->animState = mState;
+		currentTime = 0;
+
+	}
+	//일정 시간마다 공격
+	//공격시간이 되면
+	else if (currentTime > attackDelayTime)
+	{
+		ai->StopMovement();
 		//공격
 		UE_LOG(LogTemp, Log, TEXT("Attack!!!"));
 		//시간 초기화
 		currentTime = 0;
 		anim->bAttackPlay = true;
 	}
-	//타깃과의 거리
-	float distance = FVector::Distance(target->GetActorLocation(), me->GetActorLocation());
-	//거리가 공격범위를 벗어나면
-	if (distance > attackRange)
-	{
-		//이동
-		mState = EEnemyState::Idle;
-		//애니메이션 상태 동기화
-		anim->animState = mState;
-	}
+
 }
 void ULSH_EnemyFSM::DamageState()
 {
@@ -251,7 +258,8 @@ void ULSH_EnemyFSM::ClimbUpEvent()
 	double height = target->GetActorLocation().Z - me->GetActorLocation().Z;
 	
 
-	climbMode = height>10;
+	//climbMode = height>10;
+	climbMode = false;
 }
 
 void ULSH_EnemyFSM::ClimbAction()
@@ -304,4 +312,5 @@ void ULSH_EnemyFSM::DeActiveAction()
 	anim->animState = mState;
 
 	me->CharMov->SetMovementMode(MOVE_None);
+	me->CharMov->MaxFlySpeed = 100;
 }

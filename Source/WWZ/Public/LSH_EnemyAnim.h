@@ -38,4 +38,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "FSM")
 	bool bClimbOver = false;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "FSM")
+	float speed = 0;
 };

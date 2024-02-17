@@ -92,7 +92,7 @@ void ALSH_ZombieManager::Tick(float DeltaTime)
 		spawnLocChecker = !spawnLocChecker;
 	}
 
-	UE_LOG(LogTemp, Log, TEXT(" zombieQueueNum : %d, bodyListNum : %d"), zombieQueue.Num(), bodyList.Num());
+	//UE_LOG(LogTemp, Log, TEXT(" zombieQueueNum : %d, bodyListNum : %d"), zombieQueue.Num(), bodyList.Num());
 }
 
 void ALSH_ZombieManager::bodyCollecting(class ALSH_BaseZom* zombie)

@@ -59,7 +59,7 @@ public:
 	class ALSH_BaseZom* me;
 
 	UPROPERTY(EditAnywhere, Category = "FSM")
-	float attackRange = 100.0f;
+	float attackRange = 120.0f;
 
 	UPROPERTY(EditAnywhere, Category = "FSM")
 	float attackDelayTime = 3.0f;
@@ -77,7 +77,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "FSM")
 	float dieSpeed = 50.0f;
 	//사용 중인 애니메이션 블루프린트
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	class ULSH_EnemyAnim* anim;
 
 	//Enemy를 소유하고 있는 AIController
