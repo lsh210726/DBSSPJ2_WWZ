@@ -120,13 +120,20 @@ void ALSH_BaseZom::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, 
 
 void ALSH_BaseZom::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-
+	if (Cast<ALSH_ClimbSurface>(OtherActor) != nullptr)
+	{
+		fsm->anim->bClimbOver = false;
+		return;
+	}
 	//클라임오버존에 도착했다면 기어오르기 시작
-		auto a = Cast<ALSH_ClimbZone>(OtherActor);
-		if (Cast<ALSH_ClimbOverZone>(OtherActor)!=nullptr)
+		if (!fsm->anim->bClimbOver&&Cast<ALSH_ClimbOverZone>(OtherActor)!=nullptr)
 		{
 			fsm->anim->bClimbOver = true;
+			//이것 초기화 해야함
+
 		}
+
+		auto a = Cast<ALSH_ClimbZone>(OtherActor);
 		if (a != nullptr)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("다 올라감!"));

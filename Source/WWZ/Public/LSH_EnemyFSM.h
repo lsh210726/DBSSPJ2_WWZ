@@ -113,4 +113,7 @@ public:
 	class ALSH_ZombieManager* zombieManager;
 
 	FVector climbZoneLocaion;
+
+	UPROPERTY()
+	class AController* con;
 };

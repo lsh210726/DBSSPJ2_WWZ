@@ -49,6 +49,9 @@ void ULSH_EnemyFSM::BeginPlay()
 	//AAIController 할당하기
 	ai = Cast<AAIController>(me->GetController());
 
+	con = me->GetController();
+	//con->UnPossess();
+	//con->Possess(me);
 }
 
 
@@ -203,6 +206,8 @@ void ULSH_EnemyFSM::OnDamageProcess(int32 damage)
 		me->CharMov->DisableMovement();
 		//캡술컨포넌트 충돌 없애기
 		me->GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"));
+		con->UnPossess();
+
 
 		zombieManager->bodyCollecting(me);
 	}
@@ -264,6 +269,7 @@ void ULSH_EnemyFSM::ActiveAction(FVector targetLocation)
 {
 	climbZoneLocaion = targetLocation;
 	hp = 3;
+	con->Possess(me);
 
 	me->GetCapsuleComponent()->SetCollisionProfileName(TEXT("zombie"));
 
@@ -276,9 +282,10 @@ void ULSH_EnemyFSM::ActiveAction(FVector targetLocation)
 	me->CharMov->SetMovementMode(MOVE_Walking);
 
 	climbMode = true;
-
+	anim->bClimbOver = false;
 	me->bIsColliding = false;
 
+	
 }
 
 void ULSH_EnemyFSM::DeActiveAction()

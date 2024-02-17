@@ -51,10 +51,10 @@ AYSH_Player::AYSH_Player()
 	springArmComp->bUsePawnControlRotation = true;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 
-
-
+	//총 메시
 	gunMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("gunMeshComp"));
 	gunMeshComp->SetupAttachment(GetMesh());
+	gunMeshComp->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("GunSocket"));
 
 	ConstructorHelpers::FObjectFinder<USkeletalMesh> tempGunMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/YSH/Models/FPWeapon/Mesh/SK_FPGun.SK_FPGun'"));
 
@@ -67,6 +67,7 @@ AYSH_Player::AYSH_Player()
 
 	sniperMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("sniperMeshComp"));
 	sniperMeshComp->SetupAttachment(GetMesh());
+	sniperMeshComp->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("GunSocket"));
 
 	ConstructorHelpers::FObjectFinder<UStaticMesh> tempSniper(TEXT("/Script/Engine.StaticMesh'/Game/YSH/Models/SniperGun/sniper1.sniper1'"));
 
@@ -77,8 +78,21 @@ AYSH_Player::AYSH_Player()
 		sniperMeshComp->SetWorldScale3D(FVector(0.15f));
 	}
 
+	rifleMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("rifleMeshComp"));
+	rifleMeshComp->SetupAttachment(GetMesh());
+	rifleMeshComp->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("GunSocket"));
+
+	ConstructorHelpers::FObjectFinder<UStaticMesh> tempRifle(TEXT("/Script/Engine.StaticMesh'/Game/YSH/Models/Rifle/SM_RifleMerge.SM_RifleMerge'"));
+
+	if (tempRifle.Succeeded())
+	{
+		rifleMeshComp->SetStaticMesh(tempRifle.Object);
+		rifleMeshComp->SetRelativeLocation(FVector(-10, 50, 150));
+	}
+
 	ChainsawMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ChainsawMeshComp"));
 	ChainsawMeshComp->SetupAttachment(GetMesh());
+	ChainsawMeshComp->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("GunSocket"));
 
 	ConstructorHelpers::FObjectFinder<USkeletalMesh> ChainsawMeshFinder(TEXT("/Script/Engine.SkeletalMesh'/Game/YSH/Models/Chainsaw/source/model.model_Core'"));
 
@@ -88,7 +102,6 @@ AYSH_Player::AYSH_Player()
 		ChainsawMeshComp->SetRelativeLocationAndRotation(FVector(0, 50, 130), FRotator(0, 0, 90));
 		ChainsawMeshComp->SetRelativeScale3D(FVector(0.01));
 	}
-
 
 	gunMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	sniperMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -123,13 +136,6 @@ void AYSH_Player::BeginPlay()
 
 	OnActionChooseGrenadeGun();
 
-	GreMagazin = 10;
-	CurrentGreMagazin = 10;
-	totalGreMagazin = 100;
-
-	SnaMagazin = 5;
-	CurrentSnaMagazin = 5;
-	totalSnaMagazin = 20;
 
 }
 
@@ -141,6 +147,19 @@ void AYSH_Player::Tick(float DeltaTime)
 	Move();
 
 	Zoom();
+
+	if (bAutoFire)
+	{
+		//	시간이 흐르다가 
+		currentTime += DeltaTime;
+		//	만약 발사시간이되면
+		if (currentTime >= fireTime)
+		{
+			// MakeBullet함수를 호출하고싶다.
+			MakeRifleBullet();
+			currentTime = 0;
+		}
+	}
 }
 
 // Called to bind functionality to input
@@ -161,11 +180,15 @@ void AYSH_Player::SetupPlayerInputComponent(class UInputComponent* PlayerInputCo
 
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &AYSH_Player::OnActionFire );
 
+	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Released, this, &AYSH_Player::OnMyActionRifleFireReleased);
+
 	PlayerInputComponent->BindAction(TEXT("ChooseGrenadeGun"), IE_Pressed, this, &AYSH_Player::OnActionChooseGrenadeGun);
 
 	PlayerInputComponent->BindAction(TEXT("ChooseSniperGun"), IE_Pressed, this, &AYSH_Player::OnActionChooseSniperGun);
 
 	PlayerInputComponent->BindAction(TEXT("ChooseChainsaw"), IE_Pressed, this, &AYSH_Player::OnActionChooseChainsaw);
+
+	PlayerInputComponent->BindAction(TEXT("ChooseRifleGun"), IE_Pressed, this, &AYSH_Player::OnActionChooseRifleGun);
 
 	PlayerInputComponent->BindAction(TEXT("Zoom"), IE_Pressed, this, &AYSH_Player::OnActionZoomIn);
 
@@ -207,9 +230,7 @@ void AYSH_Player::OnActionJump()
 
 void AYSH_Player::OnActionFire()
 {
-	//auto anim = Cast<UYSH_PlayerAnim>(GetMesh()->GetAnimInstance());
-	//anim->PlayerAttackAnim();
-	this->PlayAnimMontage(fireMontage, 1);
+	// 카메라 쉐이크 재생
 
 	switch (CurrentWeaponType)
 	{
@@ -217,6 +238,9 @@ void AYSH_Player::OnActionFire()
 		// 수류탄 총알을 발사하는 동작을 수행합니다.
 		if (bCanFire && CurrentGreMagazin > 0)
 		{
+			auto controller = GetWorld()->GetFirstPlayerController();
+			controller->PlayerCameraManager->StartCameraShake(cameraShake);
+			this->PlayAnimMontage(fireMontage, 1);
 			FTransform t = gunMeshComp->GetSocketTransform(TEXT("FirePosition"));
 			GetWorld()->SpawnActor<AYSH_BulletActor>(bulletFactory, t);
 			CurrentGreMagazin -= 1;
@@ -226,7 +250,7 @@ void AYSH_Player::OnActionFire()
 			{
 				if (totalGreMagazin > 0)
 				{
-					StartReloadGre();
+					StartReload();
 				}
 			}
 		}
@@ -234,14 +258,21 @@ void AYSH_Player::OnActionFire()
 		{
 			if (totalGreMagazin > 0)
 			{
-				StartReloadGre();
+				StartReload();
 			}
 		}
+		break;
+	case EWeapon::RifleGun:
+		OnMyActionRiflePressed();
 		break;
 	case EWeapon::SniperGun:
 		// 저격총 총알을 발사하는 동작을 수행합니다.
 		if (bCanFire && CurrentSnaMagazin > 0)
 		{
+			auto controller = GetWorld()->GetFirstPlayerController();
+			controller->PlayerCameraManager->StartCameraShake(cameraShake);
+			this->PlayAnimMontage(fireMontage, 1);
+
 			FHitResult outHit;
 			FVector start = cameraComp->GetComponentLocation();
 			FVector end = start + cameraComp->GetForwardVector() * 100000;
@@ -275,14 +306,14 @@ void AYSH_Player::OnActionFire()
 				}
 			}
 
-			//CurrentSnaMagazin -= 1;
+			CurrentSnaMagazin -= 1;
 			crossHairUI->WhiteAimInvisible();
 
 			if (CurrentSnaMagazin == 0)
 			{
 				if (totalSnaMagazin > 0)
 				{
-					StartReloadSna();
+					StartReload();
 				}
 			}
 
@@ -291,7 +322,7 @@ void AYSH_Player::OnActionFire()
 		{
 			if (totalSnaMagazin > 0)
 			{
-				StartReloadSna();
+				StartReload();
 			}
 		}
 		break;
@@ -304,76 +335,6 @@ void AYSH_Player::OnActionFire()
 	}
 }
 
-
-void AYSH_Player::StartReloadGre()
-{
-	if (bCanFire && CurrentGreMagazin == 0)
-	{
-		BeginReloadGre();
-	}
-}
-
-void AYSH_Player::ReloadCompleteGre()
-{
-	CurrentGreMagazin = FMath::Min(totalGreMagazin, GreMagazin);
-	totalGreMagazin -= CurrentGreMagazin;
-	reloadUI->SetVisibility(ESlateVisibility::Hidden);
-
-	bCanFire = true;
-}
-
-void AYSH_Player::BeginReloadGre()
-{
-
-	bCanFire = false;
-
-	reloadUI->SetVisibility(ESlateVisibility::Visible);
-	reloadUI->ReloadPlayAnimation();
-
-
-	FTimerHandle TimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AYSH_Player::ReloadCompleteGre, ReloadTime, false);
-
-
-	CurrentGreMagazin = GreMagazin;
-	totalGreMagazin -= GreMagazin;
-}
-
-void AYSH_Player::StartReloadSna()
-{
-	if (bCanFire && CurrentSnaMagazin == 0 )
-	{
-		BeginReloadSna();
-	}
-}
-
-void AYSH_Player::ReloadCompleteSna()
-{
-	CurrentSnaMagazin = FMath::Min(totalSnaMagazin, SnaMagazin);
-	totalSnaMagazin -= CurrentSnaMagazin;
-	reloadUI->SetVisibility(ESlateVisibility::Hidden);
-
-	bCanFire = true;
-}
-
-void AYSH_Player::BeginReloadSna()
-{
-
-	bCanFire = false;
-
-	reloadUI->SetVisibility(ESlateVisibility::Visible);
-	reloadUI->ReloadPlayAnimation();
-
-
-	FTimerHandle TimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AYSH_Player::ReloadCompleteSna, ReloadTime, false);
-
-
-	CurrentSnaMagazin = SnaMagazin;
-	totalSnaMagazin -= SnaMagazin;
-}
-
-
 void AYSH_Player::OnActionChooseGrenadeGun()
 {
 	CurrentWeaponType = EWeapon::GrenadeGun;
@@ -381,6 +342,7 @@ void AYSH_Player::OnActionChooseGrenadeGun()
 	gunMeshComp->SetVisibility(true);
 	sniperMeshComp->SetVisibility(false);
 	ChainsawMeshComp->SetVisibility(false);
+	rifleMeshComp->SetVisibility(false);
 
 	OnActionZoomOut();
 }
@@ -392,14 +354,28 @@ void AYSH_Player::OnActionChooseSniperGun()
 	gunMeshComp->SetVisibility(false);
 	sniperMeshComp->SetVisibility(true);
 	ChainsawMeshComp->SetVisibility(false);
+	rifleMeshComp->SetVisibility(false);
 }
 
 void AYSH_Player::OnActionChooseChainsaw()
 {
 	CurrentWeaponType = EWeapon::Chainsaw;
+
 	gunMeshComp->SetVisibility(false);
 	sniperMeshComp->SetVisibility(false);
 	ChainsawMeshComp->SetVisibility(true);
+	rifleMeshComp->SetVisibility(false);
+}
+
+void AYSH_Player::OnActionChooseRifleGun()
+{
+	CurrentWeaponType = EWeapon::RifleGun;
+	gunMeshComp->SetVisibility(false);
+	sniperMeshComp->SetVisibility(false);
+	ChainsawMeshComp->SetVisibility(false);
+	rifleMeshComp->SetVisibility(true);
+
+	OnActionZoomOut();
 }
 
 void AYSH_Player::Zoom()
@@ -420,7 +396,7 @@ void AYSH_Player::OnActionZoomIn()
 		crossHairUI->SetVisibility(ESlateVisibility::Hidden);
 		sniperUI->SetVisibility(ESlateVisibility::Visible);
 		targetFOV = 30;
-	}else if(CurrentWeaponType == EWeapon::GrenadeGun)
+	}else if(CurrentWeaponType == EWeapon::GrenadeGun || CurrentWeaponType == EWeapon::RifleGun)
 	{
 		crossHairUI->WhiteAimVisible();
 		targetFOV = 50;
@@ -441,6 +417,144 @@ void AYSH_Player::OnActionZoomOut()
 	targetFOV = 90;
 }
 
+void AYSH_Player::OnMyActionRiflePressed()
+{
+	bAutoFire = true;
+	MakeRifleBullet();
+}
+
+void AYSH_Player::OnMyActionRifleFireReleased()
+{
+	bAutoFire = false;
+	currentTime = 0;
+}
+
+void AYSH_Player::MakeRifleBullet()
+{
+	//총알을 발사합니다
+	if (bCanFire && CurrentRifleMagazin > 0)
+	{
+		auto controller = GetWorld()->GetFirstPlayerController();
+		controller->PlayerCameraManager->StartCameraShake(cameraShake);
+		this->PlayAnimMontage(fireMontage, 1);
+
+		FHitResult outHit;
+		FVector start = cameraComp->GetComponentLocation();
+		FVector end = start + cameraComp->GetForwardVector() * 100000;
+		FCollisionQueryParams params;
+		params.AddIgnoredActor(this);
+
+		bool bReturnValue = GetWorld()->LineTraceSingleByChannel(outHit, start, end, ECollisionChannel::ECC_Visibility, params);
+		if (bReturnValue)
+		{
+			//DrawDebugLine(GetWorld(), outHit.TraceStart, outHit.ImpactPoint, FColor::Red, false, 5);
+
+			UPrimitiveComponent* hitComp = outHit.GetComponent();
+
+			if (hitComp && hitComp->IsSimulatingPhysics())
+			{
+
+				FVector dir = end - start;
+				hitComp->AddForce(dir.GetSafeNormal() * 500000 * hitComp->GetMass());
+
+			}
+			//outHit.ImpactPoint
+			//zombie damage
+			auto enemy = outHit.GetActor()->GetDefaultSubobjectByName(TEXT("FSM"));
+			if (enemy)
+			{
+				UE_LOG(LogTemp, Log, TEXT("hit"));
+				auto enemyFSM = Cast<ULSH_EnemyFSM>(enemy);
+				enemyFSM->OnDamageProcess(3);
+				crossHairUI->RedAimVisible();
+
+			}
+		}
+
+		CurrentRifleMagazin -= 1;
+		crossHairUI->WhiteAimInvisible();
+
+		if (CurrentRifleMagazin == 0)
+		{
+			if (totalRifleMagazin > 0)
+			{
+				StartReload();
+			}
+		}
+
+	}
+	else if (CurrentRifleMagazin == 0)
+	{
+		if (totalRifleMagazin > 0)
+		{
+			StartReload();
+		}
+	}
+}
+
+void AYSH_Player::StartReload()
+{
+	if (bCanFire)
+	{
+		// 현재 무기에 따라 리로드 함수를 호출합니다.
+		switch (CurrentWeaponType)
+		{
+		case EWeapon::SniperGun:
+			ReloadWeapon(CurrentSnaMagazin, SnaMagazin, totalSnaMagazin);
+			break;
+		case EWeapon::RifleGun:
+			// Rifle 총의 Reload 시작하는 부분을 여기에 구현
+			ReloadWeapon(CurrentRifleMagazin, RifleMagazin, totalRifleMagazin);
+			break;
+		default:
+			// 다른 무기에 대한 처리 (추가적인 무기가 있다면 추가)
+			break;
+		}
+	}
+}
+
+void AYSH_Player::ReloadWeapon(int& CurrentMagazin, int MaxMagazin, int& TotalMagazin)
+{
+	bCanFire = false;
+	reloadUI->SetVisibility(ESlateVisibility::Visible);
+	reloadUI->ReloadPlayAnimation();
+
+	FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AYSH_Player::ReloadComplete, ReloadTime, false);
+
+	if(TotalMagazin >0)
+	{
+		CurrentMagazin = MaxMagazin;
+		TotalMagazin -= MaxMagazin;
+	}
+}
+
+void AYSH_Player::ReloadComplete()
+{
+	// 현재 무기에 따라 리로드 완료 함수를 호출합니다.
+	switch (CurrentWeaponType)
+	{
+	case EWeapon::SniperGun:
+		ReloadCompleteWeapon(CurrentSnaMagazin, totalSnaMagazin);
+		break;
+	case EWeapon::RifleGun:
+		// Rifle 총의 Reload가 완료되었을 때 처리하는 부분을 여기에 구현
+		ReloadCompleteWeapon(CurrentRifleMagazin, totalRifleMagazin);
+		break;
+	default:
+		// 다른 무기에 대한 처리 (추가적인 무기가 있다면 추가)
+		break;
+	}
+}
+
+void AYSH_Player::ReloadCompleteWeapon(int& CurrentMagazin, int& TotalMagazin)
+{
+	CurrentMagazin = FMath::Min(TotalMagazin, CurrentMagazin);
+	TotalMagazin -= CurrentMagazin;
+	reloadUI->SetVisibility(ESlateVisibility::Hidden);
+	bCanFire = true;
+}
+
 void AYSH_Player::OnActionPickUp()
 {
 	// 플레이어 주변에 물체 감지 (충돌 체크 등)
@@ -451,13 +565,25 @@ void AYSH_Player::OnActionPickUp()
 	for (AActor* Actor : OverlappingActors)
 	{
 		AAmmoActor* AmmoActor = Cast<AAmmoActor>(Actor);
-		if (AmmoActor) // 상호작용 가능한 물체인지 확인
+		if (AmmoActor && bCanPickUp) // 상호작용 가능한 물체인지 확인
 		{
 			// 플레이어의 총알 수에 탄창의 수량을 추가
-			totalSnaMagazin += 50;
-			// 탄창을 비활성화하거나 제거
-			AmmoActor->AutoDestroy(); // 이 예시에서는 비활성화 처리하도록 가정
+			totalSnaMagazin = 60;
+			totalRifleMagazin = 300;
 
+			// 이 예시에서는 물체를 다시 활성화시키도록 가정
+			AmmoActor->SetActorHiddenInGame(false);
+
+			// OnActionPickUp 함수를 30초 후에 다시 호출할 수 있도록 타이머 설정
+			bCanPickUp = false;
+			FTimerHandle UnusedHandle;
+			GetWorldTimerManager().SetTimer(UnusedHandle, this, &AYSH_Player::EnablePickUpAction, 5.0f, false);
 		}
 	}
+}
+
+void AYSH_Player::EnablePickUpAction()
+{
+	// 30초 후에 다시 픽업을 활성화
+	bCanPickUp = true;
 }

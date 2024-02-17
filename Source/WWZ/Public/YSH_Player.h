@@ -11,7 +11,7 @@ enum class EWeapon : uint8
 {
 	GrenadeGun,
 	SniperGun,
-	BasicGun,
+	RifleGun,
 	Chainsaw
 };
 
@@ -53,36 +53,33 @@ public:
 
 	void OnActionJump();
 
-	// ï¿½ï¿½ ï¿½Þ½Ã¸ï¿½ ï¿½ß°ï¿½ï¿½Ï°ï¿½Í´ï¿½.
+	// ÃÑ ¸Þ½Ã¸¦ Ãß°¡ÇÏ°í½Í´Ù.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	class USkeletalMeshComponent* gunMeshComp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	class UStaticMeshComponent* sniperMeshComp;
 
-	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Þ½Ã¸ï¿½ ï¿½ß°ï¿½ï¿½Ï°ï¿½Í´ï¿½.
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	class UStaticMeshComponent* rifleMeshComp;
+
+	// Àü±âÅé¸Þ½Ã¸¦ Ãß°¡ÇÏ°í½Í´Ù.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	class USkeletalMeshComponent* ChainsawMeshComp;
 
-	// ï¿½Ñ¾Ë°ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í´ï¿½.
-	// ï¿½ï¿½ï¿½ì½º ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ñ¾Ë°ï¿½ï¿½å¿¡ï¿½ï¿½ ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½î¼­ FirePositionï¿½ï¿½ï¿½Ï¿ï¿½ ï¿½ï¿½Ä¡ï¿½Ï°ï¿½Í´ï¿½.
+	// ÃÑ¾Ë°øÀåÀ» ¸¸µé°í½Í´Ù.
+	// ¸¶¿ì½º ¿ÞÂÊ ¹öÆ°À» ´©¸£¸é ÃÑ¾Ë°øÀå¿¡¼­ ÃÑ¾ËÀ»¸¸µé¾î¼­ FirePosition¼ÒÄÏ¿¡ ¹èÄ¡ÇÏ°í½Í´Ù.
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AYSH_BulletActor> bulletFactory;
 
+
 	void OnActionFire();
-
-	void StartReloadGre();
-	void ReloadCompleteGre();
-	void BeginReloadGre();
-
-	void StartReloadSna();
-	void ReloadCompleteSna();
-	void BeginReloadSna();
 
 	void OnActionChooseGrenadeGun();
 	void OnActionChooseSniperGun();
 	void OnActionChooseChainsaw();
+	void OnActionChooseRifleGun();
 
 public:
 	UPROPERTY( EditAnywhere )
@@ -106,19 +103,21 @@ public:
 	void OnActionZoomOut();
 
 	void OnActionPickUp();
+	void EnablePickUpAction();
+	bool bCanPickUp = true;
 
-	/// <summary> trueï¿½ï¿½ SniperGun, falseï¿½ï¿½ GrenadeGun </summary>
+	/// <summary> true¸é SniperGun, false¸é GrenadeGun </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool bChooseSniperGun = false; //trueï¿½ï¿½ SniperGun, falseï¿½ï¿½ GrenadeGun
+	bool bChooseSniperGun = false; //true¸é SniperGun, false¸é GrenadeGun
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bChooseChainSaw = false;
 
-	//ï¿½ï¿½ï¿½Ú°ï¿½ Å°ï¿½ï¿½, ï¿½ï¿½ï¿½
+	//½ÊÀÚ°¡ Å°°í, ²ô±â
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bCrossOn = false;
 
-	//ï¿½ï¿½ï¿½Îµï¿½ UI ï¿½ï¿½ï¿½Îµï¿½
+	//¸®·Îµù UI ¾÷·Îµå
 
 	UPROPERTY()
 	class UReloadUserWidget* reloadUI;
@@ -128,34 +127,44 @@ public:
 
 	//grenadeMagazin
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int CurrentGreMagazin = 50;
+	int CurrentGreMagazin = 6;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int GreMagazin = 50;
+	int GreMagazin = 6;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int totalGreMagazin = 100;
+	int totalGreMagazin = 0;
 
 
-	//hp, magazine ï¿½ï¿½ï¿½ï¿½ ui
+	//hp, magazine °ü·Ã ui
 	UPROPERTY()
 	class UPlayerUserWidget* playerUI;
 
 	UPROPERTY( EditAnywhere )
 	TSubclassOf<class UUserWidget> playerFactory;
 
-	float ReloadTime = 2.0f;// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ò¿ï¿½Ç´ï¿½ ï¿½Ã°ï¿½
-	bool bCanFire = true;    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß»ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö´ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
-	float AimLoadTime = 0.2f;
+	float ReloadTime = 2.0f;// ÀçÀåÀü¿¡ ¼Ò¿äµÇ´Â ½Ã°£
+	bool bCanFire = true;    // ÇöÀç ÃÑÀ» ¹ß»çÇÒ ¼ö ÀÖ´ÂÁö ¿©ºÎ
+	float AimLoadTime = 0.01f;
+
+	//magazin °ü¸®
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int CurrentSnaMagazin = 5;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int CurrentSnaMagazin = 2;
+	int SnaMagazin = 5;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int SnaMagazin = 2;
+	int totalSnaMagazin = 20;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int totalSnaMagazin = 10;
+	int CurrentRifleMagazin = 30;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int RifleMagazin = 30;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int totalRifleMagazin = 210;
 
 	UPROPERTY(EditAnywhere)
 	class UAnimMontage* fireMontage;
@@ -164,8 +173,34 @@ public:
 	class USoundBase* fireSFX;
 
 	public:
-	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®
+	//¹«±â ¸®½ºÆ®
 		UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		EWeapon CurrentWeaponType;
+		UPROPERTY(EditDefaultsOnly, Category = CameraMotion)
+		TSubclassOf<class UCameraShakeBase> cameraShake;
 
+	// Rifle ÃÑ °ü·Ã
+	void OnMyActionRiflePressed();
+	void OnMyActionRifleFireReleased();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bAutoFire;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float currentTime;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float fireTime = 0.2f;
+
+	UFUNCTION(BlueprintCallable)
+	void MakeRifleBullet();
+
+	//ÀçÀåÀü Á¤¸®
+	void StartReload();
+
+	void ReloadWeapon(int& CurrentMagazin, int MaxMagazin, int& TotalMagazin);
+
+	void ReloadComplete();
+
+	void ReloadCompleteWeapon(int& CurrentMagazin, int& TotalMagazin);
 };
