@@ -469,7 +469,7 @@ void AYSH_Player::MakeRifleBullet()
 			{
 				UE_LOG(LogTemp, Log, TEXT("hit"));
 				auto enemyFSM = Cast<ULSH_EnemyFSM>(enemy);
-				enemyFSM->OnDamageProcess(3);
+				enemyFSM->OnDamageProcess(1);
 				crossHairUI->RedAimVisible();
 				enemyFSM->ShootForce(outHit.Normal * -5000);
 			}

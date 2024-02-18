@@ -37,7 +37,7 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "FSM")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "FSM")
 	EEnemyState mState = EEnemyState::Idle;
 
 	void IdleState();
@@ -62,7 +62,7 @@ public:
 	float attackRange = 120.0f;
 
 	UPROPERTY(EditAnywhere, Category = "FSM")
-	float attackDelayTime = 3.0f;
+	float attackDelayTime = 1.5f;
 
 	UFUNCTION(BlueprintCallable)
 	void OnDamageProcess(int32 damage = 1);

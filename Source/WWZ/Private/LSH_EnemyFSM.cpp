@@ -128,7 +128,7 @@ void ULSH_EnemyFSM::AttackState()
 	//타깃과의 거리
 	float distance = FVector::Distance(target->GetActorLocation(), me->GetActorLocation());
 	//거리가 공격범위를 벗어나면
-	if (distance > attackRange)
+	if (distance > attackRange&& currentTime > attackDelayTime)
 	{
 
 		//이동
@@ -199,6 +199,19 @@ void ULSH_EnemyFSM::OnDamageProcess(int32 damage)
 		//int32 index = FMath::RandRange(0, 1);
 		//FString sectionName = FString::Printf(TEXT("Damage%d"), index);
 		//anim->PlayDamageAnim(FName(*sectionName));
+
+		//만약 데미지가 들어왔는데 대기상태라면
+		if (mState == EEnemyState::Idle)
+		{
+			climbMode = false;
+			//플레이어 추적
+			mState = EEnemyState::Move;
+			//애니메이션 상태 동기화
+			anim->animState = mState;
+
+			zombieManager = Cast<ALSH_ZombieManager>(UGameplayStatics::GetActorOfClass(GetWorld(), ALSH_ZombieManager::StaticClass()));//GetActorsOfClass(GetWorld(), ALSH_ClimbZone::StaticClass(), climbZoneArray);
+
+		}
 	}
 	else
 	{
