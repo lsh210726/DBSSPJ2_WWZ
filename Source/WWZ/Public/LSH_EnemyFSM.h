@@ -119,4 +119,14 @@ public:
 
 	UFUNCTION()
 	void ShootForce(FVector force);
+
+	    // Sound to play
+    UPROPERTY(EditAnywhere, Category = "Audio")
+    USoundBase* SoundToPlay1;
+	UPROPERTY(EditAnywhere, Category = "Audio")
+    USoundBase* SoundToPlay2;
+	
+    // Sound attenuation settings
+    UPROPERTY(EditAnywhere, Category = "Audio")
+    USoundAttenuation* SoundAttenuation;
 };

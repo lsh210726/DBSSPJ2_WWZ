@@ -221,6 +221,16 @@ void ULSH_EnemyFSM::OnDamageProcess(int32 damage)
 		//me->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		////죽음 애니메이션 재생
 		//anim->PlayDamageAnim(TEXT("Die"));
+
+		if (SoundToPlay1 != nullptr && SoundToPlay2 != nullptr && SoundAttenuation != nullptr)
+		{
+			UGameplayStatics::PlaySoundAtLocation(me, FMath::RandBool()? SoundToPlay1 : SoundToPlay2, me->GetActorLocation(), 0.3, FMath::RandRange(0.8f,1.2f),0, SoundAttenuation);
+		}
+
+		mState = EEnemyState::Idle;
+
+		//애니메이션 상태 동기화
+		anim->animState = mState;
 		me->GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
 		me->GetMesh()->SetSimulatePhysics(true);
 		me->CharMov->DisableMovement();
