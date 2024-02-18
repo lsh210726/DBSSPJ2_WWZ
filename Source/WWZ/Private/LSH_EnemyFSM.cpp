@@ -213,6 +213,7 @@ void ULSH_EnemyFSM::OnDamageProcess(int32 damage)
 		me->CharMov->DisableMovement();
 		//캡술컨포넌트 충돌 없애기
 		me->GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"));
+		me->CharMov->bUseRVOAvoidance = false;
 		con->UnPossess();
 
 
@@ -286,6 +287,7 @@ void ULSH_EnemyFSM::ActiveAction(FVector targetLocation)
 
 	//애니메이션 상태 동기화
 	anim->animState = mState;
+	me->CharMov->bUseRVOAvoidance = true;
 
 	me->CharMov->SetMovementMode(MOVE_Walking);
 
@@ -313,4 +315,12 @@ void ULSH_EnemyFSM::DeActiveAction()
 
 	me->CharMov->SetMovementMode(MOVE_None);
 	
+}
+
+void ULSH_EnemyFSM::ShootForce(FVector force)
+{
+	if (hp <= 0)
+	{
+		me->GetMesh()->AddImpulse(force);
+	}
 }

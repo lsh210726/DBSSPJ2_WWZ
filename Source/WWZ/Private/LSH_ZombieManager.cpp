@@ -79,7 +79,9 @@ void ALSH_ZombieManager::Tick(float DeltaTime)
 	if (bisSpawning && zombieQueue.Num() > 0 && currentTime > 0.1)
 	{
 		auto zombie = zombieQueue[0];
-		zombie->SetActorTransform(spawnLocChecker ? spawnLocation1->GetComponentTransform():spawnLocation2->GetComponentTransform());
+		//zombie->SetActorTransform(spawnLocChecker ? spawnLocation1->GetComponentTransform():spawnLocation2->GetComponentTransform());
+		zombie->SetActorLocation(spawnLocChecker ? spawnLocation1->GetComponentLocation() + FMath::VRand() * 200 :spawnLocation2->GetComponentLocation() + FMath::VRand() * 200);
+		//zombie->SetActorLocation(GetActorLocation() + FMath::VRand()*100);
 		zombie->fsm->ActiveAction(spawnLocChecker ? spawnVec1 : spawnVec2);
 		zombieQueue.RemoveAt(0);
 		currentTime = 0;

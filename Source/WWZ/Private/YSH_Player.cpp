@@ -243,7 +243,9 @@ void AYSH_Player::OnActionFire()
 			controller->PlayerCameraManager->StartCameraShake(cameraShake);
 			this->PlayAnimMontage(fireMontage, 1);
 			FTransform t = gunMeshComp->GetSocketTransform(TEXT("FirePosition"));
+			//LSH 2.19
 			GetWorld()->SpawnActor<ALSH_Granade>(bulletFactory, t);
+
 			CurrentGreMagazin -= 1;
 			crossHairUI->WhiteAimInvisible();
 
@@ -302,8 +304,9 @@ void AYSH_Player::OnActionFire()
 					UE_LOG(LogTemp, Log, TEXT("hit"));
 					auto enemyFSM = Cast<ULSH_EnemyFSM>(enemy);
 					enemyFSM->OnDamageProcess(3);
+					enemyFSM->ShootForce(outHit.Normal * -10000);
 					crossHairUI->RedAimVisible();
-
+					
 				}
 			}
 
@@ -468,7 +471,7 @@ void AYSH_Player::MakeRifleBullet()
 				auto enemyFSM = Cast<ULSH_EnemyFSM>(enemy);
 				enemyFSM->OnDamageProcess(3);
 				crossHairUI->RedAimVisible();
-
+				enemyFSM->ShootForce(outHit.Normal * -5000);
 			}
 		}
 

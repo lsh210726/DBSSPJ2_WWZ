@@ -116,4 +116,7 @@ public:
 
 	UPROPERTY()
 	class AController* con;
+
+	UFUNCTION()
+	void ShootForce(FVector force);
 };

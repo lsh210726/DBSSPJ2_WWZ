@@ -72,6 +72,8 @@ public:
 
 	//UPROPERTY(EditAnywhere)
 	//TSubclassOf<class AYSH_BulletActor> bulletFactory;
+			
+	//LSH 2.19
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class ALSH_Granade> bulletFactory;
 
