@@ -22,20 +22,38 @@ ALSH_BaseZom::ALSH_BaseZom()
 
 	ConstructorHelpers::FObjectFinder<USkeletalMesh> tempMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/Essets/Character/Zombie/Model/Ch20_nonPBR.Ch20_nonPBR'"));
 
-	if (tempMesh.Succeeded())
+
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> zomMesh1(TEXT("/Script/Engine.SkeletalMesh'/Game/Essets/Character/Zombie/Model/zom2/Ch10_nonPBR__1_.Ch10_nonPBR__1_'"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> zomMesh2(TEXT("/Script/Engine.SkeletalMesh'/Game/Essets/Character/Zombie/Model/zom2/copzombie_l_actisdato.copzombie_l_actisdato'"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> zomMesh3(TEXT("/Script/Engine.SkeletalMesh'/Game/Essets/Character/Zombie/Model/zom2/Prisoner_B_Styperek.Prisoner_B_Styperek'"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> zomMesh4(TEXT("/Script/Engine.SkeletalMesh'/Game/Essets/Character/Zombie/Model/zom2/Survivor_A_Lusth.Survivor_A_Lusth'"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> zomMesh5(TEXT("/Script/Engine.SkeletalMesh'/Game/Essets/Character/Zombie/Model/zom2/Warzombie_F_Pedroso.Warzombie_F_Pedroso'"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> zomMesh6(TEXT("/Script/Engine.SkeletalMesh'/Game/Essets/Character/Zombie/Model/zom2/Yaku_J_Ignite__1_.Yaku_J_Ignite__1_'"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> zomMesh7(TEXT("/Script/Engine.SkeletalMesh'/Game/Essets/Character/Zombie/Model/zom2/Zombiegirl_W_Kurniawan__1_.Zombiegirl_W_Kurniawan__1_'"));
+
+	if (zomMesh1.Succeeded()) mesh1 = zomMesh1.Object;
+	if (zomMesh2.Succeeded()) mesh2 = zomMesh2.Object;
+	if (zomMesh3.Succeeded()) mesh3 = zomMesh3.Object;
+	if (zomMesh4.Succeeded()) mesh4 = zomMesh4.Object;
+	if (zomMesh5.Succeeded()) mesh5 = zomMesh5.Object;
+	if (zomMesh6.Succeeded()) mesh6 = zomMesh6.Object;
+	if (zomMesh7.Succeeded()) mesh7 = zomMesh7.Object;
+
+
+	if (zomMesh1.Succeeded())
 	{
-		GetMesh()->SetSkeletalMesh(tempMesh.Object);
+		GetMesh()->SetSkeletalMesh(mesh1);
 		GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -88), FRotator(0, -90, 0));
 	}
-
-	//AI FSM
-	fsm = CreateDefaultSubobject<ULSH_EnemyFSM>(TEXT("FSM"));
 
 	ConstructorHelpers::FClassFinder<UAnimInstance> tempClass(TEXT("/Script/Engine.AnimBlueprint'/Game/Essets/Character/Zombie/Anim/ABP_Enemy.ABP_Enemy_C'"));
 	if (tempClass.Succeeded())
 	{
 		GetMesh()->SetAnimInstanceClass(tempClass.Class);
 	}
+
+	//AI FSM
+	fsm = CreateDefaultSubobject<ULSH_EnemyFSM>(TEXT("FSM"));
 
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"));
 
@@ -53,6 +71,59 @@ void ALSH_BaseZom::BeginPlay()
 	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &ALSH_BaseZom::OnHit);
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &ALSH_BaseZom::OnBeginOverlap);
 	GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &ALSH_BaseZom::OnEndOverlap);
+
+	GetMesh()->SetSkeletalMesh(mesh2);
+
+
+	int32 RandomNumber = FMath::RandRange(1, 7);
+	switch (RandomNumber)
+	{
+	case 1:
+		if (mesh1 != nullptr)
+		{
+			GetMesh()->SetSkeletalMesh(mesh1);
+			break;
+		}
+	case 2:
+		if (mesh2 != nullptr)
+		{
+			GetMesh()->SetSkeletalMesh(mesh2);
+			break;
+		}
+	case 3:
+		if (mesh3 != nullptr)
+		{
+			GetMesh()->SetSkeletalMesh(mesh3);
+			break;
+		}
+	case 4:
+		if (mesh4 != nullptr)
+		{
+			GetMesh()->SetSkeletalMesh(mesh4);
+			break;
+		}
+	case 5:
+		if (mesh5 != nullptr)
+		{
+			GetMesh()->SetSkeletalMesh(mesh5);
+			break;
+		}
+	case 6:
+		if (mesh6 != nullptr)
+		{
+			GetMesh()->SetSkeletalMesh(mesh6);
+			break;
+		}
+	case 7:
+		if (mesh7 != nullptr)
+		{
+			GetMesh()->SetSkeletalMesh(mesh7);
+			break;
+		}
+	default:
+		// Handle unexpected cases
+		break;
+	}
 
 }
 

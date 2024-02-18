@@ -12,7 +12,7 @@ AYSH_BulletActor::AYSH_BulletActor()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	// sphereComp¸¦ ·çÆ®·Î
+	// sphereCompï¿½ï¿½ ï¿½ï¿½Æ®ï¿½ï¿½
 	sphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("sphereComp"));
 	SetRootComponent(sphereComp);
 	meshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("meshComp"));
@@ -21,7 +21,7 @@ AYSH_BulletActor::AYSH_BulletActor()
 	movementComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("movementComp"));
 	movementComp->SetUpdatedComponent(sphereComp);
 
-	// speed¼³Á¤, ¹Ù¿îµå¼³Á¤
+	// speedï¿½ï¿½ï¿½ï¿½, ï¿½Ù¿ï¿½å¼³ï¿½ï¿½
 	movementComp->InitialSpeed = 2000.f;
 	movementComp->MaxSpeed = 2000.f;
 	movementComp->bShouldBounce = true;
@@ -29,9 +29,9 @@ AYSH_BulletActor::AYSH_BulletActor()
 	sphereComp->SetCollisionProfileName(TEXT("BlockAll"));
 	meshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	// ¸Þ½ÃÀÇ Å©±â¸¦ 0.25·Î ÇÏ°í½Í´Ù.
+	// ï¿½Þ½ï¿½ï¿½ï¿½ Å©ï¿½â¸¦ 0.25ï¿½ï¿½ ï¿½Ï°ï¿½Í´ï¿½.
 	meshComp->SetWorldScale3D(FVector(0.25f));
-	// Ãæµ¹Ã¼ÀÇ ¹ÝÁö¸§À» 12.5 ÇÏ°í½Í´Ù
+	// ï¿½æµ¹Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 12.5 ï¿½Ï°ï¿½Í´ï¿½
 	sphereComp->SetSphereRadius(12.5f);
 
 	//SetLifeSpan(5); 
@@ -43,7 +43,7 @@ void AYSH_BulletActor::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	// ÃÑ¾Ë¾×ÅÍÀÇ ¼ö¸íÀ» 5ÃÊ·Î ÇÏ°í½Í´Ù. Å¸ÀÌ¸Ó¸¦ ÀÌ¿ëÇØ¼­ Ã³¸®ÇÏ°í ½Í´Ù.
+	// ï¿½Ñ¾Ë¾ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 5ï¿½Ê·ï¿½ ï¿½Ï°ï¿½Í´ï¿½. Å¸ï¿½Ì¸Ó¸ï¿½ ï¿½Ì¿ï¿½ï¿½Ø¼ï¿½ Ã³ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½Í´ï¿½.
 	//FTimerHandle timerHandle;
 	//GetWorld()->GetTimerManager().SetTimer(timerHandle, FTimerDelegate::CreateLambda([this]()->void { this->Destroy(); }), 5, false);
 }

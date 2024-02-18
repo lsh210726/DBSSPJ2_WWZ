@@ -23,7 +23,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Ãæµ¹Ã¼¿Í ¿Ü°üÀ» ¸¸µé°í½Í´Ù.
+	// ï¿½æµ¹Ã¼ï¿½ï¿½ ï¿½Ü°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í´ï¿½.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AAA)
 	class USphereComponent* sphereComp;
 

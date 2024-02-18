@@ -62,5 +62,18 @@ public:
     UFUNCTION()
     void OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-
+	UPROPERTY()
+	TObjectPtr<class USkeletalMesh> mesh1;
+	UPROPERTY()
+	TObjectPtr<class USkeletalMesh> mesh2;
+	UPROPERTY()
+	TObjectPtr<class USkeletalMesh> mesh3;
+	UPROPERTY()
+	TObjectPtr<class USkeletalMesh> mesh4;
+	UPROPERTY()
+	TObjectPtr<class USkeletalMesh> mesh5;
+	UPROPERTY()
+	TObjectPtr<class USkeletalMesh> mesh6;
+	UPROPERTY()
+	TObjectPtr<class USkeletalMesh> mesh7;
 };

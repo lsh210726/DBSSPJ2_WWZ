@@ -292,7 +292,7 @@ void ULSH_EnemyFSM::ActiveAction(FVector targetLocation)
 	climbMode = true;
 	anim->bClimbOver = false;
 	me->bIsColliding = false;
-
+	me->CharMov->MaxFlySpeed = 100;
 	
 }
 
@@ -312,5 +312,5 @@ void ULSH_EnemyFSM::DeActiveAction()
 	anim->animState = mState;
 
 	me->CharMov->SetMovementMode(MOVE_None);
-	me->CharMov->MaxFlySpeed = 100;
+	
 }
