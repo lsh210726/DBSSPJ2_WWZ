@@ -70,8 +70,10 @@ public:
 	// �Ѿ˰����� �����ʹ�.
 	// ���콺 ���� ��ư�� ������ �Ѿ˰��忡�� �Ѿ������� FirePosition���Ͽ� ��ġ�ϰ�ʹ�.
 
+	//UPROPERTY(EditAnywhere)
+	//TSubclassOf<class AYSH_BulletActor> bulletFactory;
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AYSH_BulletActor> bulletFactory;
+	TSubclassOf<class ALSH_Granade> bulletFactory;
 
 
 	void OnActionFire();

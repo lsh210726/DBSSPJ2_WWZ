@@ -20,6 +20,7 @@
 #include "YSH_PlayerAnim.h"
 #include "LSH_EnemyFSM.h"
 #include "AmmoActor.h"
+#include "LSH_Granade.h"
 
 
 // Sets default values
@@ -242,7 +243,7 @@ void AYSH_Player::OnActionFire()
 			controller->PlayerCameraManager->StartCameraShake(cameraShake);
 			this->PlayAnimMontage(fireMontage, 1);
 			FTransform t = gunMeshComp->GetSocketTransform(TEXT("FirePosition"));
-			GetWorld()->SpawnActor<AYSH_BulletActor>(bulletFactory, t);
+			GetWorld()->SpawnActor<ALSH_Granade>(bulletFactory, t);
 			CurrentGreMagazin -= 1;
 			crossHairUI->WhiteAimInvisible();
 
