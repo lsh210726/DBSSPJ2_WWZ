@@ -58,6 +58,7 @@ public:
 	float currentTime = 0;
 
 	//좀비가 스폰될 지 안될지 결정
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bisSpawning = false;
 
 	//좀비가 어떤 스폰위치에서 스폰될지 결정

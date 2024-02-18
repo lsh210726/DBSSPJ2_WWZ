@@ -67,7 +67,7 @@ void ALSH_ZombieManager::BeginPlay()
 		z1->fsm->DeActiveAction();
 
 	}
-	bisSpawning = true;
+	//bisSpawning = true;
 }
 
 // Called every frame
