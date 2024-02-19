@@ -62,7 +62,7 @@ public:
 	bool bisSpawning = false;
 
 	//좀비가 어떤 스폰위치에서 스폰될지 결정
-	bool spawnLocChecker = false;
+	bool spawnLocChecker = true;
 
 	//좀비가 죽으면 현재 시체 수를 세고 시체리스트 최대수보다 적다면 죽은 좀비를 시체리스트에 넣는다
 	//시체리스트에 이미 시체가 다 찼다면 맨 처음 시체를 비활성화시키고 대기열에 집어넣는다

@@ -20,8 +20,11 @@
 #include "YSH_PlayerAnim.h"
 #include "LSH_EnemyFSM.h"
 #include "AmmoActor.h"
+#include "Kismet/GameplayStatics.h"
+#include "../../../../../../../Source/Runtime/Engine/Classes/Kismet/GameplayStatics.h"
+#include "../../../../../../../Source/Editor/AudioEditor/Public/AssetTypeActions/AssetDefinition_SoundBase.h"
+#include "Components/BoxComponent.h"
 #include "LSH_Granade.h"
-
 
 // Sets default values
 AYSH_Player::AYSH_Player()
@@ -94,6 +97,10 @@ AYSH_Player::AYSH_Player()
 	ChainsawMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ChainsawMeshComp"));
 	ChainsawMeshComp->SetupAttachment(GetMesh());
 	ChainsawMeshComp->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("GunSocket"));
+	box = CreateDefaultSubobject<UBoxComponent>(TEXT("box"));
+	box->SetupAttachment(ChainsawMeshComp);
+	//box->SetRelativeLocation(FVector(2166,388,166));
+	//box->SetupAttachment(TEXT("ChainsawMeshComp"));
 
 	ConstructorHelpers::FObjectFinder<USkeletalMesh> ChainsawMeshFinder(TEXT("/Script/Engine.SkeletalMesh'/Game/YSH/Models/Chainsaw/source/model.model_Core'"));
 
@@ -107,6 +114,7 @@ AYSH_Player::AYSH_Player()
 	gunMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	sniperMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
+	box->OnComponentBeginOverlap.AddDynamic(this, &AYSH_Player::OnOverlapBegin);
 }
 
 // Called when the game starts or when spawned
@@ -161,6 +169,7 @@ void AYSH_Player::Tick(float DeltaTime)
 			currentTime = 0;
 		}
 	}
+	
 }
 
 // Called to bind functionality to input
@@ -202,6 +211,20 @@ void AYSH_Player::Move()
 {
 	FTransform trans = GetActorTransform();
 	AddMovementInput(trans.TransformVector(direction));
+
+	// 이동할때 발자국소리를 내고싶다.
+	//if (!bIsFootstepSoundPlaying && GetVelocity().SizeSquared() > 0)
+	//{
+		// 발자국 소리 재생
+		//UGameplayStatics::PlaySound2D(GetWorld(), FootstepSound);
+		
+	//}
+	//else if (GetVelocity().SizeSquared() == 0)
+	//{
+		// 이동이 멈추면 발자국소리를 중지하고싶다
+	//	UGameplayStatics::StopSound(GetWorld(), FootstepSound);
+	//	bIsFootstepSoundPlaying = false;
+	//}
 }
 
 void AYSH_Player::OnAxisVertical(float value)
@@ -226,6 +249,8 @@ void AYSH_Player::OnAxisLookupPitch(float value)
 
 void AYSH_Player::OnActionJump()
 {
+	UGameplayStatics::PlaySound2D(GetWorld(), runSound);
+
 	Jump();
 }
 
@@ -243,9 +268,7 @@ void AYSH_Player::OnActionFire()
 			controller->PlayerCameraManager->StartCameraShake(cameraShake);
 			this->PlayAnimMontage(fireMontage, 1);
 			FTransform t = gunMeshComp->GetSocketTransform(TEXT("FirePosition"));
-			//LSH 2.19
 			GetWorld()->SpawnActor<ALSH_Granade>(bulletFactory, t);
-
 			CurrentGreMagazin -= 1;
 			crossHairUI->WhiteAimInvisible();
 
@@ -276,6 +299,8 @@ void AYSH_Player::OnActionFire()
 			controller->PlayerCameraManager->StartCameraShake(cameraShake);
 			this->PlayAnimMontage(fireMontage, 1);
 
+			UGameplayStatics::PlaySound2D(GetWorld(), sniperSound);
+
 			FHitResult outHit;
 			FVector start = cameraComp->GetComponentLocation();
 			FVector end = start + cameraComp->GetForwardVector() * 100000;
@@ -303,10 +328,10 @@ void AYSH_Player::OnActionFire()
 				{
 					UE_LOG(LogTemp, Log, TEXT("hit"));
 					auto enemyFSM = Cast<ULSH_EnemyFSM>(enemy);
-					enemyFSM->OnDamageProcess(3);
+					enemyFSM->OnDamageProcess(4);
 					enemyFSM->ShootForce(outHit.Normal * -10000);
 					crossHairUI->RedAimVisible();
-					
+
 				}
 			}
 
@@ -331,7 +356,9 @@ void AYSH_Player::OnActionFire()
 		}
 		break;
 	case EWeapon::Chainsaw:
-		// 연쇄톱 동작을 수행합니다.
+		//전기톱 콜리전을 활성화 하고싶다.
+		box->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
 		break;
 	default:
 		// 기본 동작을 수행합니다.
@@ -369,6 +396,9 @@ void AYSH_Player::OnActionChooseChainsaw()
 	sniperMeshComp->SetVisibility(false);
 	ChainsawMeshComp->SetVisibility(true);
 	rifleMeshComp->SetVisibility(false);
+
+	//UGameplayStatics::PlaySound2D(GetWorld(), chainsawSound);
+
 }
 
 void AYSH_Player::OnActionChooseRifleGun()
@@ -431,6 +461,7 @@ void AYSH_Player::OnMyActionRifleFireReleased()
 {
 	bAutoFire = false;
 	currentTime = 0;
+	box->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void AYSH_Player::MakeRifleBullet()
@@ -462,6 +493,12 @@ void AYSH_Player::MakeRifleBullet()
 				hitComp->AddForce(dir.GetSafeNormal() * 500000 * hitComp->GetMass());
 
 			}
+
+			UGameplayStatics::PlaySound2D(GetWorld(), riflefireSound);
+
+			//부딪힌 곳에 VFX를 생성해서 배치하고싶다.
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), expVFX, outHit.ImpactPoint);
+
 			//outHit.ImpactPoint
 			//zombie damage
 			auto enemy = outHit.GetActor()->GetDefaultSubobjectByName(TEXT("FSM"));
@@ -469,9 +506,9 @@ void AYSH_Player::MakeRifleBullet()
 			{
 				UE_LOG(LogTemp, Log, TEXT("hit"));
 				auto enemyFSM = Cast<ULSH_EnemyFSM>(enemy);
-				enemyFSM->OnDamageProcess(1);
-				crossHairUI->RedAimVisible();
+				enemyFSM->OnDamageProcess(2);
 				enemyFSM->ShootForce(outHit.Normal * -5000);
+				crossHairUI->RedAimVisible();
 			}
 		}
 
@@ -510,6 +547,9 @@ void AYSH_Player::StartReload()
 			// Rifle 총의 Reload 시작하는 부분을 여기에 구현
 			ReloadWeapon(CurrentRifleMagazin, RifleMagazin, totalRifleMagazin);
 			break;
+		case EWeapon::GrenadeGun:
+			ReloadWeapon(CurrentGreMagazin, GreMagazin, totalGreMagazin);
+			break;
 		default:
 			// 다른 무기에 대한 처리 (추가적인 무기가 있다면 추가)
 			break;
@@ -545,6 +585,10 @@ void AYSH_Player::ReloadComplete()
 		// Rifle 총의 Reload가 완료되었을 때 처리하는 부분을 여기에 구현
 		ReloadCompleteWeapon(CurrentRifleMagazin, totalRifleMagazin);
 		break;
+	case EWeapon::GrenadeGun:
+		// Rifle 총의 Reload가 완료되었을 때 처리하는 부분을 여기에 구현
+		ReloadCompleteWeapon(CurrentGreMagazin, totalGreMagazin);
+		break;
 	default:
 		// 다른 무기에 대한 처리 (추가적인 무기가 있다면 추가)
 		break;
@@ -559,6 +603,13 @@ void AYSH_Player::ReloadCompleteWeapon(int& CurrentMagazin, int& TotalMagazin)
 	bCanFire = true;
 }
 
+void AYSH_Player::OnMyActionChainsawPressed()
+{
+	bAutoFire = true;
+	box->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+}
+
+
 void AYSH_Player::OnActionPickUp()
 {
 	// 플레이어 주변에 물체 감지 (충돌 체크 등)
@@ -572,6 +623,7 @@ void AYSH_Player::OnActionPickUp()
 		if (AmmoActor && bCanPickUp) // 상호작용 가능한 물체인지 확인
 		{
 			// 플레이어의 총알 수에 탄창의 수량을 추가
+			totalGreMagazin = 12;
 			totalSnaMagazin = 60;
 			totalRifleMagazin = 300;
 
@@ -590,4 +642,20 @@ void AYSH_Player::EnablePickUpAction()
 {
 	// 30초 후에 다시 픽업을 활성화
 	bCanPickUp = true;
+}
+
+void AYSH_Player::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& outHit)
+{
+	auto enemy = outHit.GetActor()->GetDefaultSubobjectByName(TEXT("FSM"));
+	if (enemy)
+	{
+		UE_LOG(LogTemp, Log, TEXT("hit"));
+		auto enemyFSM = Cast<ULSH_EnemyFSM>(enemy);
+		enemyFSM->OnDamageProcess(4);
+		//enemyFSM->ShootForce(outHit.Normal * -10000);
+		crossHairUI->RedAimVisible();
+
+	}
+
 }

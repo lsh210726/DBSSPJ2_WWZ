@@ -30,6 +30,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UStaticMeshComponent* meshComp;
 
-	FORCEINLINE void AutoDestroy() { this->Destroy(); }
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UWidgetComponent* loadingComp;
+
+	void PlayLoadingAnimation();
 
 };

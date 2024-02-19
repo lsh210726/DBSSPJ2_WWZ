@@ -188,6 +188,9 @@ void ULSH_EnemyFSM::DieState()
 void ULSH_EnemyFSM::OnDamageProcess(int32 damage)
 {
 	hp-=damage;
+
+	if(zombieManager==nullptr)zombieManager = Cast<ALSH_ZombieManager>(UGameplayStatics::GetActorOfClass(GetWorld(), ALSH_ZombieManager::StaticClass()));//GetActorsOfClass(GetWorld(), ALSH_ClimbZone::StaticClass(), climbZoneArray);
+
 	//체력이 0보다 크면 데미지 상태, 아니면 죽음
 	if (hp > 0)
 	{
@@ -209,7 +212,6 @@ void ULSH_EnemyFSM::OnDamageProcess(int32 damage)
 			//애니메이션 상태 동기화
 			anim->animState = mState;
 
-			zombieManager = Cast<ALSH_ZombieManager>(UGameplayStatics::GetActorOfClass(GetWorld(), ALSH_ZombieManager::StaticClass()));//GetActorsOfClass(GetWorld(), ALSH_ClimbZone::StaticClass(), climbZoneArray);
 
 		}
 	}

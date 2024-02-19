@@ -53,6 +53,28 @@ public:
 
 	void OnActionJump();
 
+	UPROPERTY(EditAnywhere)
+	class USoundBase* jumpSound;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* riflefireSound;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* runSound;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* chainsawSound;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* sniperSound;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* FootstepSound;
+
+
+	UPROPERTY(EditAnywhere)
+	class UParticleSystem* expVFX;
+
 	// �� �޽ø� �߰��ϰ�ʹ�.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	class USkeletalMeshComponent* gunMeshComp;
@@ -67,16 +89,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	class USkeletalMeshComponent* ChainsawMeshComp;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	class UBoxComponent* box;
+
+
 	// �Ѿ˰����� �����ʹ�.
 	// ���콺 ���� ��ư�� ������ �Ѿ˰��忡�� �Ѿ������� FirePosition���Ͽ� ��ġ�ϰ�ʹ�.
 
-	//UPROPERTY(EditAnywhere)
-	//TSubclassOf<class AYSH_BulletActor> bulletFactory;
-			
-	//LSH 2.19
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class ALSH_Granade> bulletFactory;
-
 
 	void OnActionFire();
 
@@ -137,7 +158,7 @@ public:
 	int GreMagazin = 6;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int totalGreMagazin = 0;
+	int totalGreMagazin = 6;
 
 
 	//hp, magazine ���� ui
@@ -207,4 +228,12 @@ public:
 	void ReloadComplete();
 
 	void ReloadCompleteWeapon(int& CurrentMagazin, int& TotalMagazin);
+
+
+	//chainsaw
+	void OnMyActionChainsawPressed();
+
+
+	UFUNCTION()
+	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 };

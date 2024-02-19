@@ -21,4 +21,17 @@ public:
 	UPROPERTY(BlueprintReadOnly, Transient, meta = (BindWidget))
 	class UTextBlock* TargetText;
 
+	UPROPERTY(BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
+	class UWidgetAnimation* CenterMissionAnim;
+
+	UPROPERTY(BlueprintReadOnly, Transient, meta = (BindWidget))
+	class UTextBlock* RadioText;
+
+	UPROPERTY(BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
+	class UWidgetAnimation* RadioConversation;
+
+	void PlayMissionAnim();
+
+	void PlayRadioAnim();
+
 };

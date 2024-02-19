@@ -5,6 +5,8 @@
 #include "../../../../../../../Source/Runtime/Engine/Classes/Components/SphereComponent.h"
 #include "../../../../../../../Source/Runtime/Engine/Classes/Components/StaticMeshComponent.h"
 #include "../../../../../../../Source/Runtime/Engine/Classes/GameFramework/ProjectileMovementComponent.h"
+#include "Components/WidgetComponent.h"
+#include "ItemLoadingUserWidget.h"
 
 // Sets default values
 AAmmoActor::AAmmoActor()
@@ -12,19 +14,24 @@ AAmmoActor::AAmmoActor()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	// sphereComp¸¦ ·çÆ®·Î
+	// sphereCompï¿½ï¿½ ï¿½ï¿½Æ®ï¿½ï¿½
 	sphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("sphereComp"));
 	SetRootComponent(sphereComp);
 	meshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("meshComp"));
 	meshComp->SetupAttachment(RootComponent);
+	loadingComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("loadingComp"));
+	loadingComp->SetupAttachment(RootComponent);
 
 
 	sphereComp->SetCollisionProfileName(TEXT("BlockAll"));
 	meshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	loadingComp->SetRelativeRotation(FRotator(0, 70, 0));
+	loadingComp->SetRelativeScale3D(FVector(0.5));
+	//loadingComp->SetRelativeTransform(FVector(0, 0, 100));
 
-	// ¸Þ½ÃÀÇ Å©±â¸¦ 0.25·Î ÇÏ°í½Í´Ù.
+	// ï¿½Þ½ï¿½ï¿½ï¿½ Å©ï¿½â¸¦ 0.25ï¿½ï¿½ ï¿½Ï°ï¿½Í´ï¿½.
 	meshComp->SetWorldScale3D(FVector(2.0f));
-	// Ãæµ¹Ã¼ÀÇ ¹ÝÁö¸§À» 12.5 ÇÏ°í½Í´Ù
+	// ï¿½æµ¹Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 12.5 ï¿½Ï°ï¿½Í´ï¿½
 	sphereComp->SetSphereRadius(50.0f);
 
 	//SetLifeSpan(5); 
@@ -45,3 +52,14 @@ void AAmmoActor::Tick(float DeltaTime)
 
 }
 
+void AAmmoActor::PlayLoadingAnimation()
+{
+	if (loadingComp != nullptr)
+	{
+		UItemLoadingUserWidget* LoadingWidget = Cast<UItemLoadingUserWidget>(loadingComp);
+		if (LoadingWidget != nullptr)
+		{
+			LoadingWidget->LoadingAnimation();
+		}
+	}
+}
